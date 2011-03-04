@@ -119,7 +119,6 @@ sys.inherits(BeanstalkClient, events.EventEmitter);
 
 BeanstalkClient.prototype.Instance = function(server) {
 	var p = [];
-util.log('beanstalk server is '+server);
 	
 	if(server) {
 		p = server.split(':');

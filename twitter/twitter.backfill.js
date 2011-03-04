@@ -23,20 +23,18 @@ function backfillUser(twit_client, twitter_user_id)
       page_counter+=1;
       if (page_counter==17) twit_client = null;
       getPageLinks(page, function(link, tweet, linkCallback)
-      {
-        //util.log(link);
-        //util.log(tweet);
+      { 
         var job_spec =
         {
-          url:link,
-          provider_type:'twitter',
-          provider_user_id:twitter_user_id,
-          twitter_status_update:tweet
+         "url":link,
+         "provider_type":"twitter",
+         "provider_user_id":twitter_user_id,
+         "twitter_status_update":tweet
         };
         
         job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)
         {
-          util.log(job_data);
+          //util.log(job_data);
         });
       });
     });

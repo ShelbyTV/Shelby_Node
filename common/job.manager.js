@@ -7,16 +7,17 @@ var client = bs.Client(config.beanstalkd_uri);
 //........//
 
 exports.addJob = function(tube, job, callback)
-{util.log('pushing to '+tube);
-util.log(job); 
+{
   var new_cl = bs.Client(config.beanstalkd_uri);
   new_cl.use(tube).onSuccess(function(data) 
   { util.log('putting '+job.url+' on beanstalk...');
-    new_cl.put(job).onSuccess(function(data) 
+    new_cl.put(JSON.stringify(job)).onSuccess(function(data) 
     {
       callback(data);
+      util.log(data);
+      util.log(job);
       new_cl.disconnect();
-  	});
+     });
   });
 }
 
