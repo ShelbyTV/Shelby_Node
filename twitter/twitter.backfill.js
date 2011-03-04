@@ -7,8 +7,6 @@ var twitter = require('./lib/node-twitter/lib/twitter.js');
 //redis//
 var redis = require('redis').createClient(config.redis_config.port, config.redis_config.server);
 //beanstalkd//
-var bs = require('../common/beanstalk_client.js');
-var client = bs.Client();
 var job_manager = require('../common/job.manager.js');
 
 var page_start = 17;
@@ -58,7 +56,7 @@ function getPageLinks(page, linkExtractedCallback)
 {
   for (var i in page)//foreach tweet in page
   { 
-    if (page[i].entities && page[i].entities.urls)
+    if (page[i] && page[i].entities && page[i].entities.urls)
     {
       for (var u in page[i].entities.urls)
       {
