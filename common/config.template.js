@@ -3,12 +3,10 @@ exports.environment = 'development';
 exports.twitter_keys = 
 {
   consumer_key: 'qKdbxWDx1D9ELPjqcZLz0A',
-  consumer_secret: 'a7AcAmmShY377cIOCME9nqESotgFGA2VWGAPTmQTVM',
-  /*access_token_key: '232439599-8Ji6In1HvmOuXiYh24iCA6kYasGfPMiS96FgPMCV',
-  access_token_secret: 'wOSnCeZqXJYQXXOZ4PVtmHAICR9WUvJTbY6e9mKLkQ'*/
+  consumer_secret: 'a7AcAmmShY377cIOCME9nqESotgFGA2VWGAPTmQTVM'
 }
 
-exports.beanstalk_uri = 'localhost';
+exports.beanstalkd_uri = 'localhost';
 
 exports.twitter_stream_tube = 'tw_stream';
 
