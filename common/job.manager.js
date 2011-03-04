@@ -2,12 +2,13 @@
 var util = require('./util.js');
 //beanstalk//
 var bs = require('./beanstalk_client.js');
-var client = bs.Client();
+var config = require('./config.js');
+var client = bs.Client(config.beantalkd_uri);
 //........//
 
 exports.addJob = function(tube, job, callback)
 { 
-  var new_cl = bs.Client();
+  var new_cl = bs.Client(config.beantalkd_uri);
   new_cl.use(tube).onSuccess(function(data) 
   { util.log('putting '+job.url+' on beanstalk...');
     new_cl.put(job).onSuccess(function(data) 

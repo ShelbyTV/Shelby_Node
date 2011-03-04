@@ -8,6 +8,8 @@ exports.twitter_keys =
   access_token_secret: 'wOSnCeZqXJYQXXOZ4PVtmHAICR9WUvJTbY6e9mKLkQ'*/
 }
 
+exports.beanstalk_uri = 'localhost';
+
 exports.twitter_stream_tube = 'tw_stream';
 
 exports.twitter_backfill_tube = 'tw_backfill';
