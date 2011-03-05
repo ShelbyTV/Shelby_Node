@@ -21,15 +21,15 @@ function backfillUser(twit_client, twitter_user_id)
     getPage(twit_client, p, function(page)
     {
       page_counter+=1;
-      if (page_counter==17) twit_client = null;
+      if (page_counter==17) twit_client = null; //AND delete the job here...
       getPageLinks(page, function(link, tweet, linkCallback)
       { 
         var job_spec =
         {
+	 "twitter_status_update":tweet,
          "url":link,
          "provider_type":"twitter",
-         "provider_user_id":twitter_user_id,
-         "twitter_status_update":tweet
+         "provider_user_id":twitter_user_id
         };
         
         job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)

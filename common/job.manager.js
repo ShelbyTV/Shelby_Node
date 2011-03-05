@@ -9,9 +9,10 @@ var client = bs.Client(config.beanstalkd_uri);
 exports.addJob = function(tube, job, callback)
 {
   var new_cl = bs.Client(config.beanstalkd_uri);
+  job = encodeURIComponent(JSON.stringify(job));
   new_cl.use(tube).onSuccess(function(data) 
   { util.log('putting '+job.url+' on beanstalk...');
-    new_cl.put(JSON.stringify(job)).onSuccess(function(data) 
+    new_cl.put(job).onSuccess(function(data) 
     {
       callback(data);
       util.log(data);
