@@ -1,3 +1,4 @@
 common/config.js
 .vagrant
 Vagrantfile
+logs

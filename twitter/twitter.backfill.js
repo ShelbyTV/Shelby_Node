@@ -11,17 +11,25 @@ var job_manager = require('../common/job.manager.js');
 
 var page_start = 17;
 
-function backfillUser(twit_client, twitter_user_id)
+function backfillUser(twit_client, twitter_user_id, job_id)
 {
   
   var page_counter = 0;
   
-  for(var p=page_start; p>0; p--)
-  { util.log('getting page '+p);
+  for(var p=page_start; p>0; p-=1)
+  { util.log({status:'retrieving pages', type:'backfill', job_id:job_id, twitter_id:twitter_user_id})
     getPage(twit_client, p, function(page)
     {
       page_counter+=1;
-      if (page_counter==17) twit_client = null; //AND delete the job here...
+      if (page_counter==17) 
+      {
+	twit_client = null; //little iffy about this one. garbo won't collect til all refs are nullified
+        util.log({status:'all pages retrieved', type:'backfill', job_id:job_id, twitter_id:twitter_user_id});
+        job_manager.deleteJob(job_id, function(job_del_data)
+        {
+	  listen();
+        });
+      }
       getPageLinks(page, function(link, tweet, linkCallback)
       { 
         var job_spec =
@@ -34,7 +42,7 @@ function backfillUser(twit_client, twitter_user_id)
         
         job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)
         {
-          //util.log(job_data);
+	  util.log({status:'link proccess job added', url:job_spec.url, type:'backfill>>link_processing', job_id:job_data}); 
         });
       });
     });
@@ -64,6 +72,8 @@ function getPageLinks(page, linkExtractedCallback)
   }
 }
 
+function listen()
+{
 job_manager.listenForJobs(config.twitter_backfill_tube, function(job, callback) //listen for new jobs
 {
   var job_data = eval('(' + job.data + ')');
@@ -76,10 +86,14 @@ job_manager.listenForJobs(config.twitter_backfill_tube, function(job, callback) 
       twit_cfg[prop] = config.twitter_keys[prop];
     }
     var twit = new twitter(twit_cfg);
-    backfillUser(twit, job_data.twitter_id);
+    util.log({status:'commencing new job', type:'backfill', job_id:job.id, twitter_id:job_data.twitter_id});
+    backfillUser(twit, job_data.twitter_id, job.id);
     break;
-  } 
+  }
 });
+}
+
+listen();
 
 
 
