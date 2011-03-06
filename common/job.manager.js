@@ -7,18 +7,25 @@ var client = bs.Client(config.beanstalkd_uri);
 //........//
 
 exports.addJob = function(tube, job, callback)
-{
+{ 
   var new_cl = bs.Client(config.beanstalkd_uri);
   job = encodeURIComponent(JSON.stringify(job));
   new_cl.use(tube).onSuccess(function(data) 
-  { util.log('putting '+job.url+' on beanstalk...');
+  {
     new_cl.put(job).onSuccess(function(data) 
     {
       callback(data);
-      util.log(data);
-      util.log(job);
       new_cl.disconnect();
      });
+  });
+}
+
+exports.deleteJob = function(job_id, callback)
+{ 
+  client.deleteJob(job_id).onSuccess(function(del_msg)
+  {
+    util.log({status:'deleting job', job_id:del_msg});
+    callback();
   });
 }
 
@@ -26,13 +33,10 @@ function resJob(processingCallback)
 {
   	client.reserve().onSuccess(function(job) 
   	{ 
-  	  util.log('received job:');
-  		util.log(job);
       processingCallback(job, function()
       {
         client.deleteJob(job.id).onSuccess(function(del_msg) 
     		{ 
-    		  util.log(del_msg);
     		  //synchronous//
     		  resJob(processingCallback);
     		});  
