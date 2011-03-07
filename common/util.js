@@ -6,3 +6,18 @@ exports.log = function(data)
 }
 
 exports.async = require('async');
+
+exports.resolveURL = require('./resolver.js').resolveURL;
+
+/*
+var Bitly = require('./node-bitly/lib/bitly/Bitly.js').Bitly;
+var bitly_client = new Bitly(config.bitly_usr, config.bitly_api_key);
+
+exports.expand_url = function(url, callback)
+{
+  bitly_client.expand([url], function(expanded_url)
+  {
+    expanded_url.data.expand[0].error ?  callback(1, url) : callback(null, expanded_url.data.expand[0].long_url);
+  });
+}
+*/

@@ -31,7 +31,7 @@ function backfillUser(twit_client, twitter_user_id, job_id)
 	        listen();
         });
       }
-      getPageLinks(page, function(link, tweet, linkCallback)
+      getPageLinks(page, function(link, tweet)//expanded is a bool
       { 
         var job_spec =
         {
@@ -68,7 +68,10 @@ function getPageLinks(page, linkExtractedCallback)
       for (var u in page[i].entities.urls)
       { 
         var url = page[i].entities.urls[u].expanded_url ? page[i].entities.urls[u].expanded_url : page[i].entities.urls[u].url;
-        linkExtractedCallback(url, page[i]);
+        util.resolveURL(url, function(resolved_url)
+        {
+          linkExtractedCallback(resolved_url, page[i]);  
+        });
       }
     }
   }

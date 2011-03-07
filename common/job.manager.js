@@ -24,7 +24,7 @@ exports.deleteJob = function(job_id, callback)
 { 
   client.deleteJob(job_id).onSuccess(function(del_msg)
   {
-    util.log({status:'deleting job', job_id:del_msg});
+    util.log({"status":'deleting job', "job_id":job_id});
     callback();
   });
 }
