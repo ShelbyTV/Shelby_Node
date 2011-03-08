@@ -7,7 +7,7 @@ function getHeader(url, callback)
   var client = spawn('curl', ['-I', url]);
   client.stdout.on('data', function(data)
   {
-    client.kill();
+    client.kill('SIGTERM');
     callback(data.toString('utf8'));
   });
 }
