@@ -2,8 +2,10 @@ exports.environment = 'development';
 
 exports.twitter_keys = 
 {
-  consumer_key: 'qKdbxWDx1D9ELPjqcZLz0A',
-  consumer_secret: 'a7AcAmmShY377cIOCME9nqESotgFGA2VWGAPTmQTVM'
+  consumer_key: '5DNrVZpdIwhQthCJJXCfnQ',
+  consumer_secret: 'Tlb35nblFFTZRidpu36Uo3z9mfcvSVv1MuZZ19SHaU',
+  oauth_token: '251386798-4hoHpv0Hs541ZAr4apf7tkvUXRmqOWRU1xUkYbui',
+  oauth_secret:"xG8jShVGQIcdF6rNJ21DtH40w08tCXIcK7AJBrFZdM"
 }
 
 exports.beanstalkd_uri = 'localhost';
@@ -23,3 +25,7 @@ exports.redis_config =
   port: '6379',
   server: '127.0.0.1'
 }
+
+exports.bitly_usr = 'onshelby';
+
+exports.bitly_api_key = 'R_41aac83f2cc30229bded13d2864827d6';

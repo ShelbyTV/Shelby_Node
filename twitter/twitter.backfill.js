@@ -26,11 +26,13 @@ function backfillUser(twit_client, twitter_user_id, job_id)
       {
 	      twit_client = null; //does this actually work?
         util.log({status:'all pages retrieved', type:'backfill', job_id:job_id, twitter_id:twitter_user_id});
+        
         job_manager.deleteJob(job_id, function(job_del_data)
         {
 	        listen();
         });
       }
+      
       getPageLinks(page, function(link, tweet)//expanded is a bool
       { 
         var job_spec =
@@ -45,6 +47,7 @@ function backfillUser(twit_client, twitter_user_id, job_id)
         {
 	        util.log({status:'link proccess job added', url:job_spec.url, type:'backfill', job_id:job_data}); 
         });
+        
       });
     });
   }  
@@ -53,26 +56,22 @@ function backfillUser(twit_client, twitter_user_id, job_id)
 function getPage(twit_client, page_num, callback)
 {
   twit_client.get('/statuses/home_timeline.json', {include_entities:true, count:200, page:page_num}, function(page) 
-  { 
+  {   
       callback(page);
   });  
   
 }
 
 function getPageLinks(page, linkExtractedCallback)
-{
+{ 
   for (var i in page)//foreach tweet in page
   { 
     if (page[i] && page[i].entities && page[i].entities.urls)
-    {
+    { 
       for (var u in page[i].entities.urls)
       { 
         var url = page[i].entities.urls[u].expanded_url ? page[i].entities.urls[u].expanded_url : page[i].entities.urls[u].url;
-      //  util.expand_url(url, function(err, expanded_url)
-       // {
-        //  (!err && expanded_url) ? linkExtractedCallback(expanded_url, page[i]) : linkExtractedCallback(url, page[i]);  
-       // });
-	linkExtractedCalback(url, page[i]);
+	      linkExtractedCallback(url, page[i]);
       }
     }
   }
@@ -80,23 +79,23 @@ function getPageLinks(page, linkExtractedCallback)
 
 function listen()
 {
-job_manager.listenForJobs(config.twitter_backfill_tube, function(job, callback) //listen for new jobs
-{
-  var job_data = eval('(' + job.data + ')');
-  switch(job_data.action)
+  job_manager.listenForJobs(config.twitter_backfill_tube, function(job, callback) //listen for new jobs
   {
-    case 'add_user':
-    var twit_cfg = {access_token_key:job_data.oauth_token, access_token_secret:job_data.oauth_secret};
-    for (var prop in config.twitter_keys)
+    var job_data = eval('(' + job.data + ')');
+    switch(job_data.action)
     {
-      twit_cfg[prop] = config.twitter_keys[prop];
+      case 'add_user':
+      var twit_cfg = {access_token_key:job_data.oauth_token, access_token_secret:job_data.oauth_secret};
+      for (var prop in config.twitter_keys)
+      {
+        twit_cfg[prop] = config.twitter_keys[prop];
+      }
+      var twit = new twitter(twit_cfg);
+      util.log({status:'commencing new job', type:'backfill', job_id:job.id, twitter_id:job_data.twitter_id});
+      backfillUser(twit, job_data.twitter_id, job.id);
+      break;
     }
-    var twit = new twitter(twit_cfg);
-    util.log({status:'commencing new job', type:'backfill', job_id:job.id, twitter_id:job_data.twitter_id});
-    backfillUser(twit, job_data.twitter_id, job.id);
-    break;
-  }
-});
+  });
 }
 
 listen();
