@@ -3,7 +3,7 @@ var config = require('../../common/config.js');
 //util//
 var util = require('../../common/util.js');
 //beanstalk//
-var bs = require('../../common/beanstalk_client.js').Client();
+var bs = require('../../common/beanstalk_client.js').Client(config.beanstalkd_uri);
 //.........//
 
 var message = 
