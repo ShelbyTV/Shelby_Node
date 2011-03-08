@@ -43,7 +43,7 @@ function backfillUser(twit_client, twitter_user_id, job_id)
         
         job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)
         {
-	        util.log({status:'link proccess job added', url:job_spec.url, type:'backfill>>link_processing', job_id:job_data}); 
+	        util.log({status:'link proccess job added', url:job_spec.url, type:'backfill', job_id:job_data}); 
         });
       });
     });
@@ -68,10 +68,10 @@ function getPageLinks(page, linkExtractedCallback)
       for (var u in page[i].entities.urls)
       { 
         var url = page[i].entities.urls[u].expanded_url ? page[i].entities.urls[u].expanded_url : page[i].entities.urls[u].url;
-        //util.resolveURL(url, function(resolved_url)
-        //{
-          linkExtractedCallback(url, page[i]);  
-        //});
+        util.expand_url(url, function(err, expanded_url)
+        {
+          (!err && expanded_url) ? linkExtractedCallback(expanded_url, page[i]) : linkExtractedCallback(url, page[i]);  
+        });
       }
     }
   }

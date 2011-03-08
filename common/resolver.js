@@ -1,15 +1,31 @@
 var spawn = require('child_process').spawn;
 var http = require('http');
 var util = require('./util.js');
+var living_children = 0;
 
 function getHeader(url, callback)
 {
+  
+  while(living_children>9)
+  {
+    //wait
+  }
+  console.log('SPAWNING...');
+  living_children++;
   var client = spawn('curl', ['-I', url]);
+  client.stdout.setEncoding('utf8');
+  
+  client.on('exit', function(exit_code)
+  {
+    living_children--;
+  });
+  
   client.stdout.on('data', function(data)
   {
     client.kill('SIGTERM');
-    callback(data.toString('utf8'));
+    callback(data);
   });
+
 }
 
 function getResponseCode(header, callback)
@@ -25,14 +41,12 @@ exports.resolveURL = function(url, callback)
     { 
       if (code>299 && code<400)
       {
-        header = header.split("\r\n");
-        for (var i in header)
+        var pos = header.indexOf('Location:');    
+        var location = (pos !=-1) ? header.substring(pos+10, header.indexOf("\r\n", pos)) : false;    
+        if (location) 
         {
-          if (header[i].indexOf('Location:') != -1)
-          {
-            exports.resolveURL(header[i].split(' ')[1], callback);
-            return;
-          }
+          exports.resolveURL(location, callback); 
+          return;
         }
         util.log({"status":'bad link discarded', "url":url, "response":code});
       }
