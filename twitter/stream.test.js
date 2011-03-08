@@ -8,13 +8,21 @@ var twitter = require('./lib/node-twitter/lib/twitter.js');
 var redis = require('redis').createClient(config.redis_config.port, config.redis_config.server);
 //beanstalkd//
 var job_manager = require('../common/job.manager.js');
+ 
+var twit = new twitter(config.twitter_keys);
+var twit_id = '251386798';
 
-
-twit.stream('site', {follow:[251386798]}, function(stream)
+console.log('initializing stream for '+twit_id);
+twit.stream('site', {follow:[twit_id]}, function(stream)
 { 
     stream.on('data', function (data) 
     {
-        util.log(data);
+        util.log('INCOMING DATA...');
     });
-  
+    
+    stream.on('end', function(data)
+    {
+      console.log('stream disconnected...');
+    });
+
 });

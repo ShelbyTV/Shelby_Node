@@ -71,7 +71,7 @@ function getPageLinks(page, linkExtractedCallback)
       for (var u in page[i].entities.urls)
       { 
         var url = page[i].entities.urls[u].expanded_url ? page[i].entities.urls[u].expanded_url : page[i].entities.urls[u].url;
-	      linkExtractedCallback(url, page[i]);
+	      linkExtractedCallback(url, page[i]);          
       }
     }
   }
@@ -86,10 +86,8 @@ function listen()
     {
       case 'add_user':
       var twit_cfg = {access_token_key:job_data.oauth_token, access_token_secret:job_data.oauth_secret};
-      for (var prop in config.twitter_keys)
-      {
-        twit_cfg[prop] = config.twitter_keys[prop];
-      }
+      twit_cfg.access_token_key = job_data.oauth_token;
+      twit_cfg.access_token_secret = job_data.oauth_secret;
       var twit = new twitter(twit_cfg);
       util.log({status:'commencing new job', type:'backfill', job_id:job.id, twitter_id:job_data.twitter_id});
       backfillUser(twit, job_data.twitter_id, job.id);

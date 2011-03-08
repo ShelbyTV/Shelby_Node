@@ -6,7 +6,7 @@ var util = require('../../common/util.js');
 var bs = require('../../common/beanstalk_client.js').Client(config.beanstalkd_uri);
 //.........//
 
-var message = 
+var message = //this is a sample job - and the key names need to change for twitter.js
 {
   "action":"add_user", 
   "twitter_id":(Math.floor(Math.random() * (5000 - 1000 + 1) + 1000)),
