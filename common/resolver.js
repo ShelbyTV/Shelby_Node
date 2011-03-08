@@ -18,23 +18,23 @@ function getResponseCode(header, callback)
 } 
 
 exports.resolveURL = function(url, callback)
-{
+{  
   getHeader(url, function(header)
   {
     getResponseCode(header, function(code, header)
-    {
+    { 
       if (code>299 && code<400)
       {
         header = header.split("\r\n");
-        var redirect = false;
         for (var i in header)
         {
-          redirect = (header[i].indexOf('Location:') != -1) ? header[i].split(' ')[1] : '';
+          if (header[i].indexOf('Location:') != -1)
+          {
+            exports.resolveURL(header[i].split(' ')[1], callback);
+            return;
+          }
         }
-        
-        if (!redirect) return;
-        
-        exports.resolveURL(redirect);
+        util.log({"status":'bad link discarded', "url":url, "response":code});
       }
       else if(code==200)
       {
