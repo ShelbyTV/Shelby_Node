@@ -68,10 +68,10 @@ function getPageLinks(page, linkExtractedCallback)
       for (var u in page[i].entities.urls)
       { 
         var url = page[i].entities.urls[u].expanded_url ? page[i].entities.urls[u].expanded_url : page[i].entities.urls[u].url;
-        util.resolveURL(url, function(resolved_url)
-        {
-          linkExtractedCallback(resolved_url, page[i]);  
-        });
+        //util.resolveURL(url, function(resolved_url)
+        //{
+          linkExtractedCallback(url, page[i]);  
+        //});
       }
     }
   }
