@@ -4,8 +4,8 @@ exports.twitter_keys =
 {
   consumer_key: '5DNrVZpdIwhQthCJJXCfnQ',
   consumer_secret: 'Tlb35nblFFTZRidpu36Uo3z9mfcvSVv1MuZZ19SHaU',
-  oauth_token: '251386798-4hoHpv0Hs541ZAr4apf7tkvUXRmqOWRU1xUkYbui',
-  oauth_secret:"xG8jShVGQIcdF6rNJ21DtH40w08tCXIcK7AJBrFZdM"
+  access_token_key: '250202787-MvZk6aGMDlNvAZPUtQBjexjcZ0HRxDAVmrraPGGP',
+  access_token_secret: 'xG8jShVGQIcdF6rNJ21DtH40w08tCXIcK7AJBrFZdM'
 }
 
 exports.beanstalkd_uri = 'localhost';
