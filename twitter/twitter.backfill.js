@@ -68,10 +68,11 @@ function getPageLinks(page, linkExtractedCallback)
       for (var u in page[i].entities.urls)
       { 
         var url = page[i].entities.urls[u].expanded_url ? page[i].entities.urls[u].expanded_url : page[i].entities.urls[u].url;
-        util.expand_url(url, function(err, expanded_url)
-        {
-          (!err && expanded_url) ? linkExtractedCallback(expanded_url, page[i]) : linkExtractedCallback(url, page[i]);  
-        });
+      //  util.expand_url(url, function(err, expanded_url)
+       // {
+        //  (!err && expanded_url) ? linkExtractedCallback(expanded_url, page[i]) : linkExtractedCallback(url, page[i]);  
+       // });
+	linkExtractedCalback(url, page[i]);
       }
     }
   }
