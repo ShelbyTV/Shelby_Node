@@ -119,7 +119,7 @@ function buildStream(ids, job_id)
           {
             job_manager.deleteJob(job_id, function(res)
             {
-              //job deleted...
+              initJobs();
             });
           });
         }
