@@ -17,7 +17,7 @@ twit.stream('site', {follow:[twit_id]}, function(stream)
 { 
     stream.on('data', function (data) 
     {
-        util.log('INCOMING DATA...');
+        util.log(data);
     });
     
     stream.on('end', function(data)
