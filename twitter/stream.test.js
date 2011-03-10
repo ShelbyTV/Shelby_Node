@@ -31,6 +31,7 @@ function parseSiteStreamTweet(tweet)
            "provider_type":"twitter",
            "provider_user_id":tweet.for_user
         };
+        
         job_manager.addJob(config.twitter_link_tube_add, job_spec, function(job_data)
         {
 	        //util.log({status:'link proccess job added', url:job_spec.url, type:'stream', job_id:job_data}); 
