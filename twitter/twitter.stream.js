@@ -69,15 +69,6 @@ function buildStream(ids, callback)
   //util.log(id_arrays);
   //util.async.forEach(id_arrays, iterator, callback);  
   
-  twit.stream('site', {follow:ids}, function(stream)
-  { 
-    //var stream_obj = {"stream":stream, "ids":id_arr};
-    //id_arr.length==100 ? full_streams.push(stream_obj) : partial_streams.push(stream_obj);
-    stream.on('data', function (data) 
-    {
-        util.log(data);
-    });
-  
 }
 
 function compactStreams()

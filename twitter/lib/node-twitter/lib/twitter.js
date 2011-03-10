@@ -204,6 +204,7 @@ Twitter.prototype.stream = function(method, params, callback) {
 		if ( params && params.follow && Array.isArray(params.follow) ) {
 			params.follow = params.follow.join(',')
 		}
+		//params.with = 'followings';
 	}
 
 
