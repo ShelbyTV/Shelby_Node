@@ -17,18 +17,19 @@ function parseSiteStreamTweet(tweet)
 {
   var twitter_user_id = tweet.for_user;
   var urls = null;
-  if (tweet.message.entities && tweet.message.entities.urls)
+  if (tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length)
   {
     urls = tweet.message.entities.urls;
-    
+    util.log('URLS ARE:');
+    util.log(urls);
     for (var u in urls)
     { 
       var url = urls[u].expanded_url ? urls[u].expanded_url : urls[u].url;
-      util.expandURL(url, function(expanded)
+      util.expandURL(url, tweet.message, function(expanded, tweet_msg)
       {
         var job_spec =
         {
-	         "twitter_status_update":tweet.message,
+	         "twitter_status_update":tweet_msg,
            "url":expanded,
            "provider_type":"twitter",
            "provider_user_id":twitter_user_id
@@ -163,6 +164,5 @@ setInterval(function()
 {
   util.log('FULL STREAMS: '+full_streams.length);
   util.log('PARTIAL STREAMS: '+partial_streams.length);
-  util.log(partial_streams);
 }, 4000);
 
