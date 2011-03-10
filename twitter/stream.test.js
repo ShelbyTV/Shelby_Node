@@ -28,7 +28,7 @@ function parseSiteStreamTweet(tweet)
       {
         var job_spec =
         {
-	         "twitter_status_update":tweet,
+	         "twitter_status_update":tweet.message,
            "url":expanded,
            "provider_type":"twitter",
            "provider_user_id":twitter_user_id
@@ -72,6 +72,8 @@ function compactStreams()
 
 function buildStream(ids, job_id)
 {
+
+  if (ids.length==0) return;
   var id_arrays = [];
   while (ids.length>config.twitter_stream_limit)
   {
@@ -127,7 +129,7 @@ function buildStream(ids, job_id)
 
 function initJobs()
 {
-  job_manager.listenForJobs(config.twitter_stream_tube, function(job, callback) //listen for new jobs
+  job_manager.listenForJobs(config.twitter_stream_tube_add, function(job, callback) //listen for new jobs
   {
     var job_data = eval('(' + job.data + ')');
     switch(job_data.action)
@@ -148,10 +150,6 @@ function getAllStreamUsers(callback)
     {
       callback(stream_ids);
     }
-    else
-    {
-      callback([]);
-    }  
   });  
 }
 

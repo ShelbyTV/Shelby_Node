@@ -12,7 +12,7 @@ var message = //this is a sample job - and the key names need to change for twit
   "twitter_id":"105552664"
 };
 
-bs.use(config.twitter_stream_tube).onSuccess(function(data) 
+bs.use(config.twitter_stream_tube_add).onSuccess(function(data) 
 {
 	bs.put(JSON.stringify(message)).onSuccess(function(data)
 	{

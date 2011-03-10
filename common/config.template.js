@@ -8,9 +8,9 @@ exports.twitter_keys =
   access_token_secret: 'xG8jShVGQIcdF6rNJ21DtH40w08tCXIcK7AJBrFZdM'
 }
 
-exports.beanstalkd_uri = 'localhost';
+exports.beanstalkd_uri = '184.106.78.48';
 
-exports.twitter_stream_tube = 'tw_stream';
+exports.twitter_stream_tube_add = 'tw_stream_add';
 
 exports.twitter_backfill_tube = 'tw_backfill';
 
