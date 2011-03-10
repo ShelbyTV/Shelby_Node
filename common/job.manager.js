@@ -9,11 +9,12 @@ var client = bs.Client(config.beanstalkd_uri);
 exports.addJob = function(tube, job, callback)
 { 
   var new_cl = bs.Client(config.beanstalkd_uri);
-  job = encodeURIComponent(JSON.stringify(job));
+  job_encoded = encodeURIComponent(JSON.stringify(job));
   new_cl.use(tube).onSuccess(function(data) 
   {
-    new_cl.put(job).onSuccess(function(data) 
+    new_cl.put(job_encoded).onSuccess(function(data) 
     {
+      util.log({status:'link proccess job added', "for_user":job.provider_user_id, url:job.url, job_id:data}); 
       callback(data);
       new_cl.disconnect();
      });

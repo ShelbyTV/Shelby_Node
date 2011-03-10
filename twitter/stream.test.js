@@ -15,13 +15,10 @@ var partial_streams = [];
 
 function parseSiteStreamTweet(tweet)
 {
-  var twitter_user_id = tweet.for_user;
   var urls = null;
   if (tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length)
   {
     urls = tweet.message.entities.urls;
-    util.log('URLS ARE:');
-    util.log(urls);
     for (var u in urls)
     { 
       var url = urls[u].expanded_url ? urls[u].expanded_url : urls[u].url;
@@ -32,12 +29,11 @@ function parseSiteStreamTweet(tweet)
 	         "twitter_status_update":tweet_msg,
            "url":expanded,
            "provider_type":"twitter",
-           "provider_user_id":twitter_user_id
+           "provider_user_id":tweet.for_user
         };
-        util.log('ADDING '+expanded+' TO '+twitter_user_id);
         job_manager.addJob(config.twitter_link_tube_add, job_spec, function(job_data)
         {
-	        util.log({status:'link proccess job added', url:job_spec.url, type:'backfill', job_id:job_data}); 
+	        //util.log({status:'link proccess job added', url:job_spec.url, type:'stream', job_id:job_data}); 
         });    
       });
     }

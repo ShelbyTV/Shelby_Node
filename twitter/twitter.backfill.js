@@ -42,10 +42,10 @@ function backfillUser(twit_client, twitter_user_id, job_id)
            "provider_type":"twitter",
            "provider_user_id":twitter_user_id
         };
-        
+
         job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)
         {
-	        util.log({status:'link proccess job added', url:job_spec.url, type:'backfill', job_id:job_data}); 
+	        //util.log({status:'link proccess job added', url:job_spec.url, type:'backfill', job_id:job_data}); 
         });
         
       });
