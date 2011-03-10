@@ -71,9 +71,9 @@ function getPageLinks(page, linkExtractedCallback)
       for (var u in page[i].entities.urls)
       { 
         var url = page[i].entities.urls[u].expanded_url ? page[i].entities.urls[u].expanded_url : page[i].entities.urls[u].url;
-        util.expandURL(url, function(expanded)
+        util.expandURL(url, page[i], function(expanded, tweet)
         {
-          linkExtractedCallback(expanded, page[i]) ;    
+          linkExtractedCallback(expanded, tweet);    
         });
       }
     }

@@ -33,7 +33,7 @@ function parseSiteStreamTweet(tweet)
            "provider_type":"twitter",
            "provider_user_id":twitter_user_id
         };
-        
+        util.log('ADDING '+expanded+' TO '+twitter_user_id);
         job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)
         {
 	        util.log({status:'link proccess job added', url:job_spec.url, type:'backfill', job_id:job_data}); 
@@ -64,8 +64,8 @@ function compactStreams()
   full_streams_fork = null;
   partial_streams_fork = null;
   
-  util.log('FULL STREAM SIZE NOW: '+full_streams.length);
-  util.log('PARTIAL STREAM SIZE NOW: '+partial_streams.length);
+  //util.log('FULL STREAM SIZE NOW: '+full_streams.length);
+  //util.log('PARTIAL STREAM SIZE NOW: '+partial_streams.length);
   
   getAllStreamUsers(buildStream); 
 }
@@ -82,7 +82,8 @@ function buildStream(ids, job_id)
   id_arrays.push(ids); //one id_arr for each stream  
     
   for (var i in id_arrays)
-  {
+  { 
+    util.log('BUILDING STREAM FOR:');
     util.log(id_arrays[i]);
     twit.stream('site', {follow:id_arrays[i], with:'followings'}, function(stream)
     {   
@@ -162,5 +163,6 @@ setInterval(function()
 {
   util.log('FULL STREAMS: '+full_streams.length);
   util.log('PARTIAL STREAMS: '+partial_streams.length);
+  util.log(partial_streams);
 }, 4000);
 
