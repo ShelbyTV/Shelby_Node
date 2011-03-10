@@ -18,12 +18,13 @@ exports.twitter_link_tube = 'link_processing';
 
 exports.twitter_stream_redis_key = 'tw_stream:users';
 
-exports.twitter_stream_limit = 100;
+exports.twitter_stream_limit = 5;
 
 exports.redis_config =
 {
   port: '6379',
-  server: '127.0.0.1'
+  server: '127.0.0.1',
+  stream_key: 'stream_users'
 }
 
 exports.bitly_usr = 'onshelby';
