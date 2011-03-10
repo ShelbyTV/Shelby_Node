@@ -5,7 +5,7 @@ var util = require('../common/util.js');
 //twitter//
 var twitter = require('./lib/node-twitter/lib/twitter.js');
 //redis//
-var redis = require('redis').createClient(config.redis_config.port, config.redis_config.server);
+//var redis = require('redis').createClient(config.redis_config.port, config.redis_config.server);
 //beanstalkd//
 var job_manager = require('../common/job.manager.js');
 
@@ -71,7 +71,10 @@ function getPageLinks(page, linkExtractedCallback)
       for (var u in page[i].entities.urls)
       { 
         var url = page[i].entities.urls[u].expanded_url ? page[i].entities.urls[u].expanded_url : page[i].entities.urls[u].url;
-	      linkExtractedCallback(url, page[i]);          
+        util.expandURL(url, function(expanded)
+        {
+          linkExtractedCallback(expanded, page[i]) ;    
+        });
       }
     }
   }
