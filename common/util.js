@@ -15,9 +15,8 @@ var bitly_client = new Bitly(config.bitly_usr, config.bitly_api_key);
 
 exports.expandURL = function(url, callback)
 { 
-  console.log('attempting to expand: '+url);
   bitly_client.expand([url], function(expanded_url)
   { 
-    expanded_url.data.expand[0].error ?  callback(url) : callback(expanded_url.data.expand[0].long_url);
+    expanded_url.data.expand[0].error ?  callback(url ) : callback(expanded_url.data.expand[0].long_url);
   });
 }
