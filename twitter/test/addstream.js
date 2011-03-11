@@ -15,7 +15,6 @@ bs.use(config.twitter_stream_tube_add).onSuccess(function(data)
     {
       bs.put(JSON.stringify({"action":"add_user", "twitter_id":users[i]})).onSuccess(function(data)
     	{
-    	  	bs.disconnect();
     	});
     }
   });		
