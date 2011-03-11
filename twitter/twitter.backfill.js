@@ -68,7 +68,7 @@ function getPageLinks(page, linkExtractedCallback)
   { 
     if (page[i] && page[i].entities && page[i].entities.urls)
     { 
-        var url = tweet.message.entities.urls[0];
+        var url = page[i].entities.urls[0];
         url = url.expanded_url ? url.expanded_url : url.url; 
         util.expandURL(url, page[i], function(expanded, tweet)
         {
