@@ -5,17 +5,19 @@ var util = require('../../common/util.js');
 //beanstalk//
 var bs = require('../../common/beanstalk_client.js').Client(config.beanstalkd_uri);
 //.........//
-
-var message = //this is a sample job - and the key names need to change for twitter.js
-{
-  "action":"add_user", 
-  "twitter_id":"8180"
-};
+var redis = require('redis').createClient(config.redis_config.port, config.redis_config.server);
 
 bs.use(config.twitter_stream_tube_add).onSuccess(function(data) 
 {
-	bs.put(JSON.stringify(message)).onSuccess(function(data)
-	{
-	  	bs.disconnect();
-	});
+  redis.smembers(config.redis_config.stream_key, function(err, users)
+  {
+    for (var i in users)
+    {
+      bs.put(JSON.stringify({"action":"add_user", "twitter_id":users[i]})).onSuccess(function(data)
+    	{
+    	  	bs.disconnect();
+    	});
+    }
+  });		
+
 });
