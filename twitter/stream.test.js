@@ -18,25 +18,22 @@ function parseSiteStreamTweet(tweet)
   if (tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length)
   {
     var url = tweet.message.entities.urls[0];
-    //for (var u in urls)
-    //{ 
-      url = url.expanded_url ? url.expanded_url : url.url;
-      util.expandURL(url, tweet.message, function(expanded, tweet_msg)
+    url = url.expanded_url ? url.expanded_url : url.url;
+    util.expandURL(url, tweet.message, function(expanded, tweet_msg)
+    {
+      var job_spec =
       {
-        var job_spec =
-        {
-	         "twitter_status_update":tweet_msg,
-           "url":expanded,
-           "provider_type":"twitter",
-           "provider_user_id":tweet.for_user
-        };
-        
-        job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)
-        {
-	        //util.log({status:'link proccess job added', url:job_spec.url, type:'stream', job_id:job_data}); 
-        });    
-      });
-    //}
+         "twitter_status_update":tweet_msg,
+         "url":expanded,
+         "provider_type":"twitter",
+         "provider_user_id":tweet.for_user
+      };
+      
+      job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)
+      {
+        //do nothing
+      });    
+    });
   }
   
 }
@@ -126,8 +123,22 @@ function initJobs()
     switch(job_data.action)
     {
       case 'add_user':
-      util.log('ADDING STREAM FROM JOB QUEUE');
-      buildStream([job_data.twitter_id], job.id);
+      redis.sismember(config.redis_config.stream_key, job_data.twitter_id, function(err, res)
+      {
+        if (res/1)
+        {
+         util.log({"status":'user already in stream', "twitter_id":job_data.twitter_id}); 
+         job_manager.deleteJob(job.id, function(res)
+         {
+           initJobs();
+         });
+        }
+        else
+        {
+          util.log({"status":"Adding stream from beanstalk", "type":"stream"});
+          buildStream([job_data.twitter_id], job.id);
+        }
+      });
       break;
     } 
   });  
