@@ -68,12 +68,14 @@ function getPageLinks(page, linkExtractedCallback)
   { 
     if (page[i] && page[i].entities && page[i].entities.urls)
     { 
-        var url = page[i].entities.urls[0];
-        url = url.expanded_url ? url.expanded_url : url.url; 
+      for (var u in page[i].entities.urls)
+      { 
+        var url = page[i].entities.urls[u].expanded_url ? page[i].entities.urls[u].expanded_url : page[i].entities.urls[u].url;
         util.expandURL(url, page[i], function(expanded, tweet)
         {
           linkExtractedCallback(expanded, tweet);    
         });
+      }
     }
   }
 }
