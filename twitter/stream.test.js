@@ -15,13 +15,12 @@ var partial_streams = [];
 
 function parseSiteStreamTweet(tweet)
 {
-  var urls = null;
   if (tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length)
   {
-    urls = tweet.message.entities.urls;
-    for (var u in urls)
-    { 
-      var url = urls[u].expanded_url ? urls[u].expanded_url : urls[u].url;
+    var url = tweet.message.entities.urls[0];
+    //for (var u in urls)
+    //{ 
+      url = url.expanded_url ? url.expanded_url : url.url;
       util.expandURL(url, tweet.message, function(expanded, tweet_msg)
       {
         var job_spec =
@@ -37,7 +36,7 @@ function parseSiteStreamTweet(tweet)
 	        //util.log({status:'link proccess job added', url:job_spec.url, type:'stream', job_id:job_data}); 
         });    
       });
-    }
+    //}
   }
   
 }
@@ -148,11 +147,11 @@ function getAllStreamUsers(callback)
 
 getAllStreamUsers(buildStream);
 initJobs();
-setInterval(compactStreams, 10000);
+setInterval(compactStreams, 40000);
 
 setInterval(function()
 {
   util.log('FULL STREAMS: '+full_streams.length);
   util.log('PARTIAL STREAMS: '+partial_streams.length);
-}, 4000);
+}, 30000);
 
