@@ -21,6 +21,9 @@ function parseSiteStreamTweet(tweet)
     url = url.expanded_url ? url.expanded_url : url.url;
     util.expandURL(url, tweet.message, function(expanded, tweet_msg)
     {
+      
+      util.log('BUILDING JOB SPEC FOR '+tweet.for_user);
+      
       var job_spec =
       {
          "twitter_status_update":tweet_msg,
@@ -96,6 +99,8 @@ function buildStream(ids, job_id)
         stream.on('end', function(data)
         {
           util.log('stream disconnected...');
+          //buildStream(id_arrays[i]);
+          
         });
         
         if (job_id)
