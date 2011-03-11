@@ -154,5 +154,6 @@ setInterval(function()
 {
   util.log('FULL STREAMS: '+full_streams.length);
   util.log('PARTIAL STREAMS: '+partial_streams.length);
+  util.log(partial_streams);
 }, 4000);
 
