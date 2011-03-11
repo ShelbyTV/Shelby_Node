@@ -19,6 +19,7 @@ function backfillUser(twit_client, twitter_user_id, job_id)
   for(var p=page_start; p>0; p-=1)
   { 
     util.log({status:'retrieving pages', type:'backfill', job_id:job_id, twitter_id:twitter_user_id})
+    
     getPage(twit_client, p, function(page)
     {
       page_counter+=1;
@@ -66,16 +67,13 @@ function getPageLinks(page, linkExtractedCallback)
 { 
   for (var i in page)//foreach tweet in page
   { 
-    if (page[i] && page[i].entities && page[i].entities.urls)
+    if (page[i] && page[i].entities && page[i].entities.urls && page[i].entities.urls.length)
     { 
-      for (var u in page[i].entities.urls)
-      { 
-        var url = page[i].entities.urls[u].expanded_url ? page[i].entities.urls[u].expanded_url : page[i].entities.urls[u].url;
+        var url = page[i].entities.urls[0].expanded_url ? page[i].entities.urls[0].expanded_url : page[i].entities.urls[0].url;
         util.expandURL(url, page[i], function(expanded, tweet)
         {
           linkExtractedCallback(expanded, tweet);    
         });
-      }
     }
   }
 }
