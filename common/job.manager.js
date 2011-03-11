@@ -15,7 +15,7 @@ exports.addJob = function(tube, job, callback)
     new_cl.put(job_encoded).onSuccess(function(data) 
     {
       util.log({status:'link proccess job added', "for_user":job.provider_user_id, url:job.url, job_id:data}); 
-      util.log(job);
+      //util.log(job);
       callback(data);
       new_cl.disconnect();
      });
