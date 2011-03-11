@@ -46,18 +46,60 @@ function compactStreams()
   util.log('...COMPACTING...');
   
   var partial_streams_fork = partial_streams.splice(0, partial_streams.length);
-  
+
   var all_partial_ids = [];
   
   for (var j in partial_streams_fork)
   {
     all_partial_ids = all_partial_ids.concat(partial_streams_fork[j].following);
-    partial_streams_fork[j].stream.destroy;
+    partial_streams_fork[j].stream.destroy();
   }
-  
   partial_streams_fork = null;
 
   buildStream(all_partial_ids); 
+}
+
+function defineStream(following, job_id)
+{
+  twit.stream('site', {follow:following, with:'followings'}, function(stream)
+  {   
+      var stream_object = 
+      {
+        "stream":stream,
+        "following":following
+      }
+      
+      if (following.length==config.twitter_stream_limit)
+      {
+        full_streams.push(stream_object);
+      }
+      else
+      {
+        partial_streams.push(stream_object);
+      }
+      
+      stream.on('data', function (data) 
+      {
+        parseSiteStreamTweet(data);
+      });
+
+      stream.on('end', function(data)
+      {
+        util.log('stream disconnected...');        
+      });
+      
+      if (job_id)
+      { 
+        redis.sadd(config.redis_config.stream_key, following[0], function(err, res)
+        {
+          job_manager.deleteJob(job_id, function(res)
+          {
+            initJobs();
+          });
+        });
+      }
+
+  });  
 }
 
 function buildStream(ids, job_id)
@@ -69,52 +111,14 @@ function buildStream(ids, job_id)
   {
     id_arrays.push(ids.splice(0,config.twitter_stream_limit));
   }
+  
   id_arrays.push(ids); //one id_arr for each stream  
     
   for (var i in id_arrays)
   { 
     util.log('BUILDING STREAM FOR:');
     util.log(id_arrays[i]);
-    twit.stream('site', {follow:id_arrays[i], with:'followings'}, function(stream)
-    {   
-        var stream_object = 
-        {
-          "stream":stream
-        }
-        
-        if (id_arrays[i].length==config.twitter_stream_limit)
-        {
-          full_streams.push(stream_object);
-        }
-        else
-        {
-          partial_streams.push(stream_object);
-        }
-        
-        stream.on('data', function (data) 
-        {
-          parseSiteStreamTweet(data);
-        });
-
-        stream.on('end', function(data)
-        {
-          util.log('stream disconnected...');
-          //buildStream(id_arrays[i]);
-          
-        });
-        
-        if (job_id)
-        { 
-          redis.sadd(config.redis_config.stream_key, ids[0], function(err, res)
-          {
-            job_manager.deleteJob(job_id, function(res)
-            {
-              initJobs();
-            });
-          });
-        }
-
-    });    
+    defineStream(id_arrays[i], job_id);
   }
   
 }
@@ -162,11 +166,15 @@ function getAllStreamUsers(callback)
 
 getAllStreamUsers(buildStream);
 initJobs();
-setInterval(compactStreams, 40000);
+setInterval(compactStreams, 8000);
 
 setInterval(function()
 {
   util.log('FULL STREAMS: '+full_streams.length);
   util.log('PARTIAL STREAMS: '+partial_streams.length);
-}, 30000);
+  for (var i in partial_streams)
+  {
+    util.log
+  }
+}, 5000);
 
