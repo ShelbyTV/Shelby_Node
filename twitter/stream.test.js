@@ -76,8 +76,7 @@ function buildStream(ids, job_id)
     {   
         var stream_object = 
         {
-          "stream":stream,
-          "following":id_arrays[i]
+          "stream":stream
         }
         
         if (id_arrays[i].length==config.twitter_stream_limit)
