@@ -10,14 +10,14 @@ var redis = require('redis').createClient(config.redis_config.port, config.redis
 exports.addJob = function(tube, job, callback)
 { 
   var new_cl = bs.Client(config.beanstalkd_uri);
-  job_encoded = encodeURIComponent(JSON.stringify(job));
-  redis.hincrby('test', job.url+':'+job.provider_user_id, 1);
+  //job_encoded = encodeURIComponent(JSON.stringify(job));
+  job = encodeURIComponent(JSON.stringify(job));
+  //redis.hincrby('test', job.url+':'+job.provider_user_id, 1);
   new_cl.use(tube).onSuccess(function(data) 
   {
-    new_cl.put(job_encoded).onSuccess(function(data) 
+    new_cl.put(job).onSuccess(function(data) 
     {
-      util.log({status:'link proccess job added', "for_user":job.provider_user_id, url:job.url, job_id:data}); 
-      
+      //util.log({status:'link proccess job added', "for_user":job.provider_user_id, url:job.url, job_id:data}); 
       callback(data);
       new_cl.disconnect();
      });
