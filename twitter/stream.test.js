@@ -173,7 +173,7 @@ function getAllStreamUsers(callback)
 
 getAllStreamUsers(buildStream);
 initJobs();
-setInterval(compactStreams, 8000);
+setInterval(compactStreams, 10000);
 
 setInterval(function()
 {
@@ -183,5 +183,5 @@ setInterval(function()
   {
     util.log
   }
-}, 5000);
+}, 10000);
 
