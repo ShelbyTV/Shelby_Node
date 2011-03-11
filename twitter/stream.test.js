@@ -29,6 +29,7 @@ function parseSiteStreamTweet(tweet)
          "provider_user_id":tweet.for_user
       };
       
+      console.log(job_spec);
       job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)
       {
         //do nothing
