@@ -13,6 +13,7 @@ var twit = new twitter(config.twitter_keys);
 function parseSiteStreamTweet(data)
 {
   console.log('TWEET!');
+  console.log(data);
 }
 
 twit.stream('site', {follow:[251386798], with:'followings'}, function(stream)
