@@ -9,14 +9,16 @@ var redis = require('redis').createClient(config.redis_config.port, config.redis
 
 bs.use(config.twitter_stream_tube_add).onSuccess(function(data) 
 {
-  redis.smembers(config.redis_config.stream_key, function(err, users)
-  {    
+  //redis.smembers(config.redis_config.stream_key, function(err, users)
+  //{
+      var users = ['17368581'];
       for (var i in users)
       {
         bs.put(JSON.stringify({"action":"add_user", "twitter_id":users[i]})).onSuccess(function(data)
     	{
+    	  bs.disconnect(function(){});
     	});
     }
-  });		
+  //});		'12735452', '17368581', '232439599' 
 
 });

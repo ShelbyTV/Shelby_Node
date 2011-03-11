@@ -13,6 +13,8 @@ var twit = new twitter(config.twitter_keys);
 var full_streams = [];
 var partial_streams = [];
 
+var should_compact = false;
+
 function parseSiteStreamTweet(tweet)
 {
   if (tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length)
@@ -43,6 +45,8 @@ function parseSiteStreamTweet(tweet)
 
 function compactStreams()
 {
+  if (!should_compact) return;
+  
   util.log('...COMPACTING...');
   
   var partial_streams_fork = partial_streams.splice(0, partial_streams.length);
@@ -57,6 +61,7 @@ function compactStreams()
   partial_streams_fork = null;
 
   buildStream(all_partial_ids); 
+  should_compact = false;
 }
 
 function defineStream(following, job_id)
@@ -85,7 +90,8 @@ function defineStream(following, job_id)
 
       stream.on('end', function(data)
       {
-        util.log('stream disconnected...');        
+        util.log('stream disconnected...');
+        //buildStream(following);        
       });
       
       if (job_id)
@@ -144,6 +150,7 @@ function initJobs()
         else
         {
           util.log({"status":"Adding stream from beanstalk", "type":"stream"});
+          should_compact = true;
           buildStream([job_data.twitter_id], job.id);
         }
       });
