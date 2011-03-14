@@ -34,6 +34,7 @@ socket.on('connection', function(client){
 	     {
 	       console.log('client added');
    	     console.log(Clients);
+   	     data = eval('(' + data + ')');
    	     setInterval(function(){pushPayloadToClient(data, message.user_id, function(){})}, 5000);
 	     });  
 	    });
