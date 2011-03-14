@@ -91,20 +91,14 @@ function pushPayloadToClient(payload, user_id, callback)
 function proccessNewJob(job)
 {
   var job_data = eval('(' + job.data + ')');
-  
-  switch(job_data.action)
+  pushPayloadToClient(job_data.payload, job_data.user_id, function()
   {
-    case 'new_video':
-    console.log(job_data);
-    pushPayloadToClient(job_data.payload, job_data.user_id, function()
+    job_manager.deleteJob(job.id, function()
     {
-      job_manager.deleteJob(job.id, function()
-      {
-        listen();
-      });
+      listen();
     });
-    break;
-  }
+  });
+
 }
 
 function listen()

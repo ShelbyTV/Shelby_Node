@@ -33,5 +33,5 @@ exports.websocket =
 {
   server_uri: '0.0.0.0',
   server_port: '5555',
-  tube: 'websockets'
+  tube: 'ws_deliver_to_client'
 }
