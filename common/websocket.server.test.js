@@ -34,7 +34,7 @@ socket.on('connection', function(client){
 	     {
 	       console.log('client added');
    	     console.log(Clients);
-   	     setInterval(function(){pushPayloadToClient(JSON.parse(data), message.user_id, function(){})}, 5000);
+   	     setInterval(function(){pushPayloadToClient(data, message.user_id, function(){})}, 5000);
 	     });  
 	    });
 	    break;
