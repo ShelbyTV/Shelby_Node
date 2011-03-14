@@ -16,7 +16,7 @@ exports.twitter_backfill_tube = 'tw_backfill';
 
 exports.twitter_link_tube = 'link_processing';
 
-exports.twitter_stream_limit = 5;
+exports.twitter_stream_limit = 100;
 
 exports.redis_config =
 {
