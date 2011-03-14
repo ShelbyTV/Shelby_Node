@@ -28,3 +28,10 @@ exports.redis_config =
 exports.bitly_usr = 'onshelby';
 
 exports.bitly_api_key = 'R_41aac83f2cc30229bded13d2864827d6';
+
+exports.websocket =
+{
+  server_uri: '0.0.0.0',
+  server_port: '5555',
+  tube: 'websockets'
+}

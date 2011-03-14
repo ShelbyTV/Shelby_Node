@@ -4,7 +4,6 @@ var util = require('./util.js');
 var bs = require('./beanstalk_client.js');
 var config = require('./config.js');
 var client = bs.Client(config.beanstalkd_uri);
-var redis = require('redis').createClient(config.redis_config.port, config.redis_config.server);
 //........//
 
 exports.addJob = function(tube, job, callback)
@@ -12,7 +11,6 @@ exports.addJob = function(tube, job, callback)
   var new_cl = bs.Client(config.beanstalkd_uri);
   //job_encoded = encodeURIComponent(JSON.stringify(job));
   job = encodeURIComponent(JSON.stringify(job));
-  //redis.hincrby('test', job.url+':'+job.provider_user_id, 1);
   new_cl.use(tube).onSuccess(function(data) 
   {
     new_cl.put(job).onSuccess(function(data) 
