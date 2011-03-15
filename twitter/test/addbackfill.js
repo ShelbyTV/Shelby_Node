@@ -21,8 +21,3 @@ bs.use(config.twitter_backfill_tube).onSuccess(function(data)
 	  	bs.disconnect();
 	});
 });
-
-/*
-"oauth_token":"250202787-MvZk6aGMDlNvAZPUtQBjexjcZ0HRxDAVmrraPGGP",
- "oauth_secret":"xG8jShVGQIcdF6rNJ21DtH40w08tCXIcK7AJBrFZdM"
- */

@@ -2,7 +2,6 @@ var config = require('./config.js');
 var sys  = require('sys');
 var io   = require('socket.io');
 var http = require('http');
-var response = require('./clientresponse.js');
 var job_manager = require('./job.manager.js');
 var Clients = {};
 var util = require('./util.js');
