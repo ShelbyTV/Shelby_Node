@@ -78,7 +78,7 @@ function pushPayloadToClient(payload, user_id, callback)
  for (var i in Clients[user_id])
  {
    util.log({"status":"sending payload to user", "client":user_id, "payload":payload})
-   response.sendMessageToClient(payload, Clients[user_id][i]);
+   Clients[user_id][i].send(payload);
    completed+=1;
    if (completed===Clients[user_id].length)
    {
