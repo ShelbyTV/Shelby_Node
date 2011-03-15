@@ -17,7 +17,7 @@ exports.expandURL = function(url, tweet, callback)
 { 
   bitly_client.expand([url], function(expanded_url)
   { 
-    if (expanded_url.data.expand[0])
+    if (expanded_url && expanded_url.data && expanded_url.data.expand && expanded_url.data.expand.length)
     {
       expanded_url.data.expand[0].error ?  callback(url, tweet) : callback(expanded_url.data.expand[0].long_url, tweet);
     }
