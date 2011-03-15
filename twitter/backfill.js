@@ -93,11 +93,7 @@ function getPageLinks(page, linkExtractedCallback)
 */
 function gotAllPages(twit_client, job_id)
 {
-  util.log('GOT ALL PAGES CALLED');
-  util.log('JOB ID IS: '+job_id)
-  //twit_client = null; //does this actually work?
   util.log({status:'all pages retrieved', type:'backfill', "job_id":job_id});
-
   job_manager.deleteJob(job_id, function(job_del_data)
   { 
     listen();
@@ -134,7 +130,7 @@ function initTwitterClient(job_data, _startBackfill)
 function proccessNewJob(job)
 {
   var job_data = eval('(' + job.data + ')');
-  
+  console.log(job_data);
   switch(job_data.action)
   {
     case 'add_user':
