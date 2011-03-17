@@ -35,3 +35,10 @@ exports.websocket =
   server_port: '5555',
   tube: 'ws_deliver_to_client'
 }
+
+exports.facebook =
+{
+  app_id: '115071338568035',
+  app_secret: '416ce973e4a78ca6a99227731946b27b',
+  tube_add: 'fb_tube_add'
+}

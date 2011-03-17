@@ -27,3 +27,24 @@ exports.expandURL = function(url, tweet, callback)
     }
   });
 }
+
+
+/*
+* type: string : 'ms' for return in milliseconds 's' for return in seconds
+*/
+exports.getTimestamp = function(type, callback)
+{
+  var ms = new Date().getTime();
+  
+  switch(type)
+  {
+    case 'ms':
+    break;
+    
+    case 's':
+    ms = Math.round(ms/1000);
+    break;
+  }
+  
+  callback(ms);
+}

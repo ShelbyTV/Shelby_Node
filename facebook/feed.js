@@ -1,34 +1,42 @@
-var express = require('express'),
-    connect = require('connect'),
-    facebookClient = require('facebook-js')(
-      '115071338568035',
-      '416ce973e4a78ca6a99227731946b27b'
-    ), 
-    redis = require('redis').createClient();
+var config = require('../common/config.js');
+var util = require('../common/util.js');
+var facebookClient = require('facebook-js')(config.facebook.app_id, config.facebook.app_secret);
+var fb_dao = require('./lib/facebook_dao.js');
+var job_manager = require('../common/job.manager.js');
 
-function getFeed(user_id, callback)
-{ //fb_dao..get_user_data - returns a hash
-  getAccessToken(user_id, function(err, token)
-  { console.log('got access token::'+token);
-    if (err && !token) {callback('ERR:not found', null);return;}
-    //fb_dao.getLastSeen(user_id, function(err, res))
-    facebookClient.apiCall('GET','/'+user_id+'/home', {since:0, access_token: token, fields:'type,source,name,from,name,comments', limit:1000}, function(err, res)
-    {
-      if (err && !res) {callback('ERR:not found', null);return;}
-      console.log('FEED LENGTH:' +res.data.length);
-      console.log(res.paging);
-      //mark last_seen in redis
-      parseFeed(res, proccessLink);
-    });      
+function initFbUser(facebook_id, access_token, job_id, callback)
+{
+  fb_dao.setUserInfo(facebook_id, {"facebook_id":facebook_id, "access_token":access_token, "last_seen":0}, function(err, res)
+  {
+    if (err && !res) {callback('ERR:user info not set', null);return;}
+    getFeed(facebook_id, callback);
+    //2.wait for group interval
   });
 }
 
-function getAccessToken(user_id, callback)
-{
-  //redis.hget('fb_tokens', user_id, callback);
-  callback(null, '115071338568035|cf4da0397104a7a50b4cda8b-1319152|hymtzZncfOtETKwLh84fnI7y4ZE');
+/*
+* user_id : int || string : user facebook id
+*/
+function getFeed(user_id, callback)
+{ 
+  fb_dao.getUserInfo(user_id, function(err, info)
+  {
+    if (err && (!info || !info.length==3)) {callback('ERR:info bad or not found', null);return;}
+    
+    facebookClient.apiCall('GET','/'+user_id+'/home', {since:info.last_seen, access_token: info.access_token, fields:'type,source,name,from', limit:1000}, function(err, feed)
+    {
+      if (err && (!feed || !feed.data)) {callback('ERR:bad API call or no feed data', null);return;}
+      util.getTimestamp('s', function(ts)
+      {
+        fb_dao.setUserProperty(user_id, 'last_seen', ts, function(err, res)
+        {
+          if (err && !res){callback('ERR:last_seen not set', null); return;}
+          parseFeed(feed, callback);  
+        });
+      });
+    });          
+  });
 }
-
 
 function parseFeed(feed, callback)
 { 
@@ -42,14 +50,14 @@ function parseFeed(feed, callback)
     {
       if (feed.data[i] && feed.data[i].type && feed.data[i].type=='video' && feed.data[i].source)
       {
-	      videos.push(feed.data[i]);
+	      proccessLink(feed.data[i]);
       }
       
       inspected+=1;
             
       if (inspected==feed.data.length)
       { 
-        console.log(videos);
+        callback(null, 1); //jobDeletion..
       }	
     }	
   }
@@ -61,4 +69,35 @@ function proccessLink(feed_obj)
   console.log(feed_obj);
 }
 
-getFeed('1319152', console.log);
+function initJobs()
+{
+  job_manager.listenForJobs(config.facebook.tube_add, function(job, callback) //listen for new jobs
+  {
+    var job_data = eval('(' + job.data + ')');
+    switch(job_data.action)
+    {
+      case 'add_user':
+      util.log({"status":"Adding facebook user", "type":"fb_feed", "user":job_data.facebook_id});
+      initFbUser(job_data.facebook_id, job_data.access_token, job.id, function(err, res)
+      {
+        if (!err && res)
+        {
+          //job_manager.deleteJob
+        }
+        else
+        {
+          //handle error
+        }
+      });
+      break;
+    } 
+  });  
+}
+
+
+getFeed('1319152', function(err, res)
+{
+  console.log('Error:'+err);
+  console.log(res);
+});
+
