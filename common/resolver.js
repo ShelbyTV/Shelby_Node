@@ -12,7 +12,7 @@ function getHeader(url, callback)
   }
   console.log('SPAWNING...');
   living_children++;
-  var client = spawn('curl', ['-I', url]);
+  var client = spawn('curl', ['-I', '-L', url]);
   client.stdout.setEncoding('utf8');
   
   client.on('exit', function(exit_code)
