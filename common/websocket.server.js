@@ -103,7 +103,7 @@ function proccessNewJob(job)
   
   var job_data = eval('(' + job.data + ')');
   
-  //if (!job_data){util.log({status:"null job_data received"});util.log(job);return;}
+  if (!job_data){util.log({status:"null job_data received"});util.log(job);}
   
   pushPayloadToClient(job_data.payload, job_data.user_id, function()
   {
