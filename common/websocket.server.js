@@ -105,6 +105,8 @@ function logAllClients()
 
 function proccessNewJob(job)
 {
+  if (!job){util.log(status:"null job received");return;}
+  
   var job_data = eval('(' + job.data + ')');
   pushPayloadToClient(job_data.payload, job_data.user_id, function()
   {

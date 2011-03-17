@@ -39,7 +39,6 @@ function resJob(processingCallback)
       {
         client.deleteJob(job.id).onSuccess(function(del_msg) 
     		{ 
-    		  //synchronous//
     		  resJob(processingCallback);
     		});  
       });
