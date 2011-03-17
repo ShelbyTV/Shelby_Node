@@ -108,6 +108,9 @@ function proccessNewJob(job)
   if (!job){util.log({status:"null job received"});return;}
   
   var job_data = eval('(' + job.data + ')');
+  
+  if (!job_data){util.log({status:"null job_data received"});return;}
+  
   pushPayloadToClient(job_data.payload, job_data.user_id, function()
   {
     job_manager.deleteJob(job.id, function()
