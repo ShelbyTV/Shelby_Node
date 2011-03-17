@@ -70,23 +70,18 @@ function pushPayloadToClient(payload, user_id, callback)
  if (!Clients[user_id])
  {
    util.log({"status":"user "+user_id+" not currently connected"});
-   callback();
-   return;
  } 
- 
- var completed = 0;
- 
- for (var i in Clients[user_id])
- {
-   util.log({"status":"sending payload to user", "client":user_id})
-   Clients[user_id][i].send(payload);
-   completed+=1;
-   if (completed===Clients[user_id].length)
+ else
+ { 
+   for (var i in Clients[user_id])
    {
-     callback();
-   }    
+     util.log({"status":"sending payload to user", "client":user_id});
+     Clients[user_id][i].send(payload);    
+   }
  }
  
+ callback();
+  
 }
 
 function logAllClients()
