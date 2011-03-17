@@ -35,13 +35,15 @@ function resJob(processingCallback)
 {
   	client.reserve().onSuccess(function(job) 
   	{ 
-      processingCallback(job, function()
-      {
-        client.deleteJob(job.id).onSuccess(function(del_msg) 
-    		{ 
-    		  resJob(processingCallback);
-    		});  
-      });
+      processingCallback(job
+        //, function()
+      //{
+        //client.deleteJob(job.id).onSuccess(function(del_msg) 
+    		//{ 
+    		  //resJob(processingCallback);
+    		//});  
+      //}
+      );
       
   	});
 }

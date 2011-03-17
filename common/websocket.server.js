@@ -79,7 +79,6 @@ function pushPayloadToClient(payload, user_id, callback)
      Clients[user_id][i].send(payload);    
    }
  }
- 
  callback();
   
 }
@@ -104,7 +103,7 @@ function proccessNewJob(job)
   
   var job_data = eval('(' + job.data + ')');
   
-  if (!job_data){util.log({status:"null job_data received"});return;}
+  if (!job_data){util.log({status:"null job_data received"});util.log(job);return;}
   
   pushPayloadToClient(job_data.payload, job_data.user_id, function()
   {
