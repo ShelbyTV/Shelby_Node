@@ -25,7 +25,7 @@ function getFeed(user_id, callback)
     
     facebookClient.apiCall('GET','/'+user_id+'/home', {since:info.last_seen, access_token: info.access_token, fields:'type,source,name,from', limit:1000}, function(err, feed)
     {
-      if (err && (!feed || !feed.data)) {callback('ERR:bad API call or no feed data', null);return;}
+      if (err && (!feed || !feed.data)) {callback('ERR:bad API call or no new feed data', null);return;}
       util.getTimestamp('s', function(ts)
       {
         fb_dao.setUserProperty(user_id, 'last_seen', ts, function(err, res)
@@ -46,6 +46,8 @@ function parseFeed(feed, callback)
   
   if (feed && feed.data && feed.data.length)
   {
+    callback(null, {status:'feed retrieved - now parsing', type:'fb_feed'}); //job deletion
+    
     for (var i in feed.data)
     {
       if (feed.data[i] && feed.data[i].type && feed.data[i].type=='video' && feed.data[i].source)
@@ -57,7 +59,7 @@ function parseFeed(feed, callback)
             
       if (inspected==feed.data.length)
       { 
-        callback(null, 1); //jobDeletion..
+        //callback(null, 1); //jobDeletion..
       }	
     }	
   }
@@ -65,7 +67,8 @@ function parseFeed(feed, callback)
 }
 
 function proccessLink(feed_obj)
-{
+{ 
+  //TODO: place job on queue 
   console.log(feed_obj);
 }
 
@@ -82,11 +85,15 @@ function initJobs()
       {
         if (!err && res)
         {
-          //job_manager.deleteJob
+          job_manager.deleteJob(job.id, function(res)
+          {
+            util.log(res);
+            initJobs();
+          });
         }
         else
         {
-          //handle error
+          util.log(err);
         }
       });
       break;
@@ -94,10 +101,30 @@ function initJobs()
   });  
 }
 
-
-getFeed('1319152', function(err, res)
+fb_dao.getUserSet(function(err, members)
 {
-  console.log('Error:'+err);
-  console.log(res);
+  if (err || !members.length) {util.log({status:"error retrieving fb users or no users", type:"fb_feed"});return;}
+  util.log({status:'initializing facebook polling from redis'});
+  for (var i in members)
+  {
+    getFeed(members[i], function(err, res)
+    {
+      if (err)
+      {
+        util.log(err)
+      }
+      else if (res)
+      {
+        util.log(res);
+      }
+    });
+  }
 });
 
+/*
+getFeed('1319152', function(err, res)
+{
+  console.log(err);
+  console.log(res);
+});
+*/

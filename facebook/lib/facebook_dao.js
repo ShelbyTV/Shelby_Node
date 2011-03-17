@@ -13,7 +13,12 @@ function getUserSetKey()
 
 function addUserToSet(facebook_id, callback)
 {
-  redis.sadd(getUserSetKey, facebook_id, callback);
+  redis.sadd(getUserSetKey(), facebook_id, callback);
+}
+
+exports.getUserSet = function(callback)
+{
+  redis.smembers(getUserSetKey(), callback);
 }
 exports.getUserInfo = function(facebook_id, callback)
 {
@@ -21,14 +26,16 @@ exports.getUserInfo = function(facebook_id, callback)
 }
 
 exports.setUserInfo = function(facebook_id, info_hash, callback)
-{
-  redis.hmset(getUserInfoKey(facebook_id), info_hash, callback);
+{ 
+  addUserToSet(facebook_id, function(err, res)
+  {
+    redis.hmset(getUserInfoKey(facebook_id), info_hash, callback);  
+  });
 }
 
 exports.setUserProperty = function(facebook_id, property, value, callback)
 {
   redis.hset(getUserInfoKey, property, value, callback);
 }
-
 
 //{"facebook_id":facebook_id, "access_token":access_token, "last_seen":last_seen}
