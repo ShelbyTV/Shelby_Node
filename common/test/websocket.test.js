@@ -10,7 +10,7 @@ var message = //this is a sample job - and the key names need to change for twit
 {
   "action":"new_video", 
   "user_id":process.argv[2],
-  "payload":{"url":"http://www.youtube.com/watch?v=1pBkBhE7T10&feature=topvideos"}
+  "payload":JSON.stringify({"url":"http://www.youtube.com/watch?v=1pBkBhE7T10&feature=topvideos"})
 };
 
 bs.use(config.websocket.tube).onSuccess(function(data) 

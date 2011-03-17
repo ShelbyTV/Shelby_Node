@@ -27,8 +27,8 @@ socket.on('connection', function(client){
 	    case 'init':
 	    addNewClient(client, message.user_id, function()
 	    {
-	     console.log('client added');
-	     console.log(Clients);
+	     util.log({"status":'adding client', "user_id":message.user_id});
+	     logAllClients();
 	    });
 	    break;
 	  }
@@ -38,7 +38,8 @@ socket.on('connection', function(client){
 	{  
 	  removeClient(client, function()
 	  {
-	    //reponse / logging?
+	    util.log({"status":"removing client", "user_id":client.user_id});
+	    logAllClients();
 	  });
 	});
 	
@@ -47,6 +48,7 @@ socket.on('connection', function(client){
 function removeClient(client, callback)
 {
   delete Clients[client.user_id];
+  logAllClients();
   callback();
 }
 
@@ -85,6 +87,20 @@ function pushPayloadToClient(payload, user_id, callback)
    }    
  }
  
+}
+
+function logAllClients()
+{ 
+  var ids = [];
+  
+  for (var i in Clients)
+  {
+    ids.push(i);
+  }
+  
+  util.log('ALL CLIENTS:');
+  util.log(ids);
+  delete ids;
 }
 
 function proccessNewJob(job)
