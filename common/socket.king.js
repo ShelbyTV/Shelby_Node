@@ -2,9 +2,9 @@ var config = require('./config.js');
 var sys  = require('sys');
 var io   = require('socket.io');
 var http = require('http');
-var job_manager = require('./job.manager.js');
 var Clients = {};
 var util = require('./util.js');
+var job_king = require('./job.king.js');
 
 server = http.createServer(function(req, res) 
 { 
@@ -90,39 +90,24 @@ function logAllClients()
   delete ids;
 }
 
-function proccessNewJob(job)
+function proccessNewJob(job, deleteJobAndListen)
 { 
-  var job_data = eval('(' + job.data + ')');
-  //var job_data = JSON.parse(job.data);
+  //var job_data = eval('(' + job.data + ')');
+  //var job_data = JSON.parse(job.data); 
  
-  if (job_data)
+  if (job.payload && job.user_id)
   {  
-    pushPayloadToClient(job_data.payload, job_data.user_id, function()
+    pushPayloadToClient(job.payload, job.user_id, function()
     {
-      job_manager.deleteJob(job.id, function()
-      {
-        listen();
-      });
+	deleteJobAndListen();
     });
   }
   else
   {
       util.log({"status":"bad/null job data"});
       util.log(job);
-     // if (job.id)
-      //{
-        job_manager.deleteJob(job.id, function()
-        {
-          listen();
-        }); 
-      //}
+      deleteJobAndListen();
   }
 }
 
-function listen()
-{
-  job_manager.listenForJobs(config.websocket.tube, proccessNewJob);
-}
-
-listen();
-
+job_king.spawnClientToRes(proccessNewJob);
