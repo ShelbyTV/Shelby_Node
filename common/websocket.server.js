@@ -55,13 +55,7 @@ function removeClient(client, callback)
 function addNewClient(client, user_id, callback)
 {
   client.user_id = user_id;
-  
-  if (!Clients[user_id])
-  {
-    Clients[user_id] = [];
-  }
-  
-  Clients[user_id].push(client);
+  Clients[user_id] = client;
   callback();
 }
 
@@ -73,11 +67,10 @@ function pushPayloadToClient(payload, user_id, callback)
  } 
  else
  { 
-   for (var i in Clients[user_id])
-   {
-     util.log({"status":"sending payload to user", "client":user_id});
-     Clients[user_id][i].send(payload);    
-   }
+   
+   util.log({"status":"sending payload to user", "client":user_id});
+   Clients[user_id].send(payload);    
+   
  }
  callback();
   
@@ -98,21 +91,28 @@ function logAllClients()
 }
 
 function proccessNewJob(job)
-{
-  if (!job){util.log({status:"null job received"});return;}
-  
+{ 
   var job_data = eval('(' + job.data + ')');
-  
-  if (!job_data){util.log({status:"null job_data received"});util.log(job);}
-  
-  pushPayloadToClient(job_data.payload, job_data.user_id, function()
-  {
-    job_manager.deleteJob(job.id, function()
+  //var job_data = JSON.parse(job.data);
+ 
+  if (job_data && job_data.payload)
+  {  
+    pushPayloadToClient(job_data.payload, job_data.user_id, function()
     {
-      listen();
+      job_manager.deleteJob(job.id, function()
+      {
+        listen();
+      });
     });
-  });
-
+  }
+  else
+  {
+      util.log({"status":"bad/null job data"});
+      job_manager.deleteJob(job.id, function()
+      {
+        listen();
+      }); 
+  }
 }
 
 function listen()
