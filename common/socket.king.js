@@ -110,4 +110,4 @@ function proccessNewJob(job, deleteJobAndListen)
   }
 }
 
-job_king.spawnClientToRes(proccessNewJob);
+job_king.spawnClientToRes(config.websocket.tube, proccessNewJob);
