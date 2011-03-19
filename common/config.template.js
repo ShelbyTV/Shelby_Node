@@ -18,6 +18,11 @@ exports.twitter_link_tube = 'link_processing';
 
 exports.twitter_stream_limit = 100;
 
+exports.beanstalk = 
+{
+  uri:'127.0.0.1'
+}
+
 exports.redis_config =
 {
   port: '6379',
