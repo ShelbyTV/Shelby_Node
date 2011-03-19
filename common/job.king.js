@@ -58,35 +58,3 @@ exports.spawnClientToPut = function(tub, job)
     });
   });  
 }
-
-exports.spawnClientToRes(config.websocket.tube, function(job, callback)
-{
-  console.log(job);
-  callback();
-});
-
-/*
-exports.spawnClientToRes = function(tube, doJob)
-{
-  console.log('spawning client');
-  client.connect(config.beanstalk.uri+':11300', function(err, conn) 
-  {
-    conn.watch(tube, function() 
-    {
-      conn.reserve(function(err, job_id, job_json) 
-      {
-        console.log('got job: ' + job_id);
-        doJob(JSON.parse(job_json), function()
-        {
-          conn.destroy(job_id, functionion(err) 
-          {
-            console.log('destroyed job');
-            exports.spawnClientToRes(tube, doJob);
-            conn=null;
-          });
-        });
-      });
-    });
-  });
-}
-*/  
