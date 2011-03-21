@@ -54,8 +54,9 @@ function compactStreams()
   var all_partial_ids = [];
   
   for (var j in partial_streams_fork)
-  {
-    all_partial_ids = all_partial_ids.concat(partial_streams_fork[j].following);
+  { 
+    partial_streams_fork.shutting_down = true;
+    all_partial_ids = all_partial_ids.concat(partial_streams_fork[j].following);  
     partial_streams_fork[j].stream.destroy();
   }
   partial_streams_fork = null;
@@ -77,10 +78,12 @@ function defineStream(following, job_id)
       if (following.length==config.twitter_stream_limit)
       {
         full_streams.push(stream_object);
+        stream_object.container = full_streams;
       }
       else
       {
         partial_streams.push(stream_object);
+        stream_object.container = partial_streams;
       }
       
       stream.on('data', function (data) 
@@ -89,10 +92,20 @@ function defineStream(following, job_id)
       });
 
       stream.on('end', function(data)
-      {
+      { 
+        if (stream_object.shutting_down) return;
         util.log('stream disconnected...');
-        //buildStream(following);        
+        for (var i in stream_object.container)
+        {
+          if (stream_object.container[i]==stream_object)
+          {
+            stream_object.container.splice(i, 1);
+          }
+        }
+        buildStream(following);
       });
+      
+      //setTimeout(stream.destroy, 10000);
       
       if (job_id)
       { 
