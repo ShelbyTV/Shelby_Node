@@ -52,6 +52,7 @@ exports.resJob = function(processJob)
       {
         //console.log('RECEIVED JOB:', job);
         util.log({"status":"received job"});
+        console.log(job);
         exports.resJob(processJob);
         processJob(job, function() 
         {
