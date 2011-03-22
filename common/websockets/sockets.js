@@ -70,7 +70,6 @@ function pushPayloadToClient(payload, user_id, callback)
    
    util.log({"status":"sending payload to user", "client":user_id});
    Clients[user_id].send(payload);    
-   
  }
  callback();
   
@@ -93,6 +92,7 @@ function logAllClients()
 function proccessNewJob(job, deleteJobAndListen)
 { 
   job = JSON.parse(job.data);
+  
   if (job.payload && job.user_id)
   {  
     pushPayloadToClient(job.payload, job.user_id, deleteJobAndListen);
