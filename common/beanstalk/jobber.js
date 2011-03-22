@@ -14,7 +14,7 @@ exports.init = function(size, res_tube, put_tube, callback)
   
   for (var i=0; i<size; i++)
   {
-    pool.push(bs.Client());  
+    pool.push(bs.Client(config.beanstalkd_uri));  
   }
   
   callback();    
