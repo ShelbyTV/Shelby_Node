@@ -50,15 +50,18 @@ exports.resJob = function(processJob)
     {
       client.reserve().onSuccess(function(job) 
       {
-        console.log('RECEIVED JOB:', job);
+        //console.log('RECEIVED JOB:', job);
+        util.log({"status":"received job"});
         exports.resJob(processJob);
         processJob(job, function() 
         {
-          console.log('PROCESSED:', job);
+          //console.log('PROCESSED:', job);
+          util.log({"status":"processed job"});
           client.deleteJob(job.id).onSuccess(function(del_msg) 
-          {
-              console.log('DELETED:', job);
-              console.log(del_msg);
+          {   
+              util.log({"status":"deleted job"});
+              //console.log('DELETED:', job);
+              //console.log(del_msg);
               makeClientFree(client);
           });
         });
