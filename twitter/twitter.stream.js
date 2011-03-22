@@ -55,9 +55,10 @@ function compactStreams()
   
   for (var j in partial_streams_fork)
   { 
-    partial_streams_fork.shutting_down = true;
+    partial_streams_fork[j].intent_to_term = true;
     all_partial_ids = all_partial_ids.concat(partial_streams_fork[j].following);  
     partial_streams_fork[j].stream.destroy();
+    partial_streams_forke[j].intent_to_term = false;
   }
   partial_streams_fork = null;
 
@@ -72,18 +73,17 @@ function defineStream(following, job_id)
       var stream_object = 
       {
         "stream":stream,
-        "following":following
+        "following":following,
+        "intent_to_term":false
       }
       
       if (following.length==config.twitter_stream_limit)
       {
         full_streams.push(stream_object);
-        stream_object.container = full_streams;
       }
       else
       {
         partial_streams.push(stream_object);
-        stream_object.container = partial_streams;
       }
       
       stream.on('data', function (data) 
@@ -93,20 +93,17 @@ function defineStream(following, job_id)
 
       stream.on('end', function(data)
       { 
-        if (stream_object.shutting_down) return;
-        util.log('stream disconnected...');
-        for (var i in stream_object.container)
+        if (stream.intent_to_term)
         {
-          if (stream_object.container[i]==stream_object)
-          {
-            stream_object.container.splice(i, 1);
-          }
-        }
-        buildStream(following);
+          util.log('INTENTIONAL termination...ignoring...');
+          return;
+        } 
+        
+        util.log('stream died naturally exiting...');
+        process.exit();
+        //buildStream(following);
       });
-      
-      //setTimeout(stream.destroy, 10000);
-      
+            
       if (job_id)
       { 
         redis.sadd(config.redis_config.stream_key, following[0], function(err, res)
@@ -197,4 +194,9 @@ setInterval(function()
     util.log
   }
 }, 10000);
+
+setTimeout(function()
+{
+  partial_streams[0].stream.destroy();
+  }, 30000);
 
