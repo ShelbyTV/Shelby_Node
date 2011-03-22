@@ -195,8 +195,3 @@ setInterval(function()
   }
 }, 10000);
 
-setTimeout(function()
-{
-  partial_streams[0].stream.destroy();
-  }, 30000);
-
