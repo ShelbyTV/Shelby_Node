@@ -91,8 +91,10 @@ function logAllClients()
 
 function proccessNewJob(job, deleteJobAndListen)
 { 
-  job = JSON.parse(job.data);
-  
+  job = JSON.parse(job);
+  job = JSON.parse(job.data);  
+//util.log(job.data);  
+//job = eval('(' + job.data + ')');
   if (job.payload && job.user_id)
   {  
     pushPayloadToClient(job.payload, job.user_id, deleteJobAndListen);
