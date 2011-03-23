@@ -1,5 +1,5 @@
-var config = require('./config.js');  
-var util = require('./util.js');
+var config = require('../config.js');  
+var util = require('../util.js');
 var client = require('beanstalk_client').Client;
 var conn = null;
 

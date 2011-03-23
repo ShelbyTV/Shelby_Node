@@ -52,18 +52,17 @@ function compactStreams()
   var partial_streams_fork = partial_streams.splice(0, partial_streams.length);
 
   var all_partial_ids = [];
-  
+    
   for (var j in partial_streams_fork)
   { 
     partial_streams_fork[j].intent_to_term = true;
     all_partial_ids = all_partial_ids.concat(partial_streams_fork[j].following);  
     partial_streams_fork[j].stream.destroy();
-    partial_streams_forke[j].intent_to_term = false;
-  }
-  partial_streams_fork = null;
-
-  buildStream(all_partial_ids); 
-  should_compact = false;
+    partial_streams_fork[j].intent_to_term = false;
+  }  
+    partial_streams_fork = null;
+    buildStream(all_partial_ids); 
+    should_compact = false;  
 }
 
 function defineStream(following, job_id)
@@ -80,10 +79,12 @@ function defineStream(following, job_id)
       if (following.length==config.twitter_stream_limit)
       {
         full_streams.push(stream_object);
+        stream_object.container = full_streams;
       }
       else
       {
         partial_streams.push(stream_object);
+        stream_object.container = partial_streams;
       }
       
       stream.on('data', function (data) 
@@ -93,15 +94,17 @@ function defineStream(following, job_id)
 
       stream.on('end', function(data)
       { 
-        if (stream.intent_to_term)
+        if (stream_object.intent_to_term)
         {
           util.log('INTENTIONAL termination...ignoring...');
           return;
         } 
         
         util.log('stream died naturally exiting...');
-        process.exit();
-        //buildStream(following);
+        var stream_to_kill = removeElFromArray(stream_object, stream_object.container);
+        stream_to_kill = null;
+        //process.exit();
+        buildStream(following);
       });
             
       if (job_id)
@@ -116,6 +119,18 @@ function defineStream(following, job_id)
       }
 
   });  
+}
+
+function removeElFromArray(el, arr)
+{
+  for (var i in arr)
+  {
+    if (arr[i]==el)
+    {
+      return arr.splice(i,1)[0];
+    }
+  }
+  return false;
 }
 
 function buildStream(ids, job_id)
@@ -195,3 +210,8 @@ setInterval(function()
   }
 }, 10000);
 
+/*
+setTimeout(function(){
+  partial_streams[0].stream.destroy();
+}, 25000);
+*/

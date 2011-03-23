@@ -7,7 +7,7 @@ var twitter = require('./lib/node-twitter/lib/twitter.js');
 //redis//
 var redis = require('redis').createClient(config.redis_config.port, config.redis_config.server);
 //beanstalkd//
-var job_manager = require('../common/job.manager.js');
+var job_manager = require('../common/beanstalk/job.manager.js');
 var twit = new twitter(config.twitter_keys);
 //streams//
 var full_streams = [];
@@ -19,12 +19,10 @@ function parseSiteStreamTweet(tweet)
   {
     var url = tweet.message.entities.urls[0];
     url = url.expanded_url ? url.expanded_url : url.url;
-    util.expandURL(url, tweet.message, function(expanded, tweet_msg)
-    {      
       var job_spec =
       {
-         "twitter_status_update":tweet_msg,
-         "url":expanded,
+         "twitter_status_update":tweet.message,
+         "url":url,
          "provider_type":"twitter",
          "provider_user_id":tweet.for_user
       };
@@ -33,7 +31,6 @@ function parseSiteStreamTweet(tweet)
       {
         util.log('BUILT JOB FOR '+tweet.for_user);  
       });    
-    });
   }
 }
 

@@ -1,10 +1,10 @@
-var config = require('./config.js');
+var config = require('../config.js');
 var sys  = require('sys');
 var io   = require('socket.io');
 var http = require('http');
 var Clients = {};
-var util = require('./util.js');
-var job_king = require('./job.king.js');
+var util = require('../util.js');
+var job_king = require('../beanstalk/job.king.js');
 
 server = http.createServer(function(req, res) 
 { 

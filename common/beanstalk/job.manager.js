@@ -1,8 +1,8 @@
 //util//
-var util = require('./util.js');
+var util = require('../util.js');
 //beanstalk//
 var bs = require('./beanstalk_client.js');
-var config = require('./config.js');
+var config = require('../config.js');
 var client = bs.Client(config.beanstalkd_uri);
 //........//
 

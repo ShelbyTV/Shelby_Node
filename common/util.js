@@ -7,9 +7,9 @@ exports.log = function(data)
 
 exports.async = require('async');
 
-exports.resolveURL = require('./resolver.js').resolveURL;
+//exports.resolveURL = require('./resolver.js').resolveURL;
 
-
+/*
 var Bitly = require('./node-bitly/lib/bitly/Bitly.js').Bitly;
 var bitly_client = new Bitly(config.bitly_usr, config.bitly_api_key);
 
@@ -27,7 +27,7 @@ exports.expandURL = function(url, tweet, callback)
     }
   });
 }
-
+*/
 
 /*
 * type: string : 'ms' for return in milliseconds 's' for return in seconds
