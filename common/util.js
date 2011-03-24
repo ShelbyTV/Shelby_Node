@@ -1,8 +1,9 @@
 var config = require('./config.js');
+var util = require('util');
 
 exports.log = function(data)
 {
-  config.env=='production' ? '': console.log(data);
+  config.env=='production' ? '': util.log(util.inspect(data, false, null));
 }
 
 exports.async = require('async');
