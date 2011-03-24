@@ -35,7 +35,15 @@ exports.setUserInfo = function(facebook_id, info_hash, callback)
 
 exports.setUserProperty = function(facebook_id, property, value, callback)
 {
-  redis.hset(getUserInfoKey, property, value, callback);
+  redis.hset(getUserInfoKey(facebook_id), property, value, callback);
+}
+
+exports.userIsInSet = function(facebook_id, callback)
+{
+  redis.sismember(getUserSetKey(), facebook_id, function(err, res)
+  {
+    callback(res);
+  });
 }
 
 //{"facebook_id":facebook_id, "access_token":access_token, "last_seen":last_seen}
