@@ -87,3 +87,20 @@ exports.putJob = function(job, callback)
     });
   });
 }
+
+exports.putJobJSON = function(job, callback)
+{ 
+  getFreeClient(function(cl)
+  {
+    job = JSON.stringify(job);
+    cl.use(putTube).onSuccess(function(data) 
+    {
+      cl.put(job).onSuccess(function(data) 
+      { 
+        util.log({"status":"added job", "job_id:":data});
+        callback(data);
+        makeClientFree(cl);
+      });
+    });
+  });
+}
