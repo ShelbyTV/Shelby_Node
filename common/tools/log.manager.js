@@ -6,11 +6,11 @@ function truncateLogs()
   '/var/log/shelby/backfill.log', 
   '/var/log/shelby/websocket.log', 
   '/var/log/shelby/stream.log',
-  '/var/log/redis.log']);
+  '/var/log/shelby/redis.log']);
 
   trunc = null;  
   
   console.log('files trunced');
 }
 
-setInterval(truncateLogs, (60 * 10 * 1000));
+setInterval(truncateLogs, (600000));
