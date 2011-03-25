@@ -45,5 +45,5 @@ exports.facebook =
 {
   app_id: '115071338568035',
   app_secret: '416ce973e4a78ca6a99227731946b27b',
-  tube_add: 'fb_tube_add'
+  tube_add: 'fb_add_user'
 }
