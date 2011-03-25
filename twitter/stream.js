@@ -17,35 +17,16 @@ function parseSiteStreamTweet(tweet)
 {
   if (tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length)
   {
-    
     for (var i in tweet.message.entities.urls)
     {
       buildJob(tweet.message, tweet.message.entities.urls[i], tweet.for_user);
-    } 
-  
-    /*
-    var url = tweet.message.entities.urls[0];
-    url = url.expanded_url ? url.expanded_url : url.url;
-      var job_spec =
-      {
-         "twitter_status_update":tweet.message,
-         "url":url,
-         "provider_type":"twitter",
-         "provider_user_id":tweet.for_user
-      };
-      
-      job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)
-      {
-        util.log('BUILT JOB FOR '+tweet.for_user);  
-      });
-      */    
+    }     
   }
 }
 
 function buildJob(tweet, url, twitter_id)
 {
     url = url.expanded_url ? url.expanded_url : url.url;
-    console.log(url);
     var job_spec =
     {
        "twitter_status_update":tweet,
