@@ -35,7 +35,7 @@ function startBackfill(twit_client, twitter_user_id, deleteJobAndListen)
       
       getPageLinks(page, function(link, tweet)
       {
-        addLinkToQueue(link, tweet, twitter_user_id);
+        return addLinkToQueue(link, tweet, twitter_user_id);
       });
     });
   }  
@@ -56,7 +56,7 @@ function addLinkToQueue(link, tweet, twitter_id)
 
   jobber.putJob(job_spec, function(data)
   {
-    //do nothing
+    return;
   });
 }
 
@@ -67,7 +67,7 @@ function getPage(twit_client, page_num, callback)
 {
   twit_client.get('/statuses/home_timeline.json', {include_entities:true, count:200, page:page_num}, function(page) 
   {   
-      callback(page);
+      return callback(page);
   });  
   
 }
@@ -95,7 +95,7 @@ function addUser(job_data, deleteJobAndListen)
   util.log({status:'commencing new job', type:'backfill', twitter_id:job_data.twitter_id});
   initTwitterClient(job_data, function(twitter_client)
   {
-    startBackfill(twitter_client, job_data.twitter_id, deleteJobAndListen);
+    return startBackfill(twitter_client, job_data.twitter_id, deleteJobAndListen);
   });
 }
 
@@ -109,7 +109,7 @@ function initTwitterClient(job_data, _startBackfill)
   twit_cfg.access_token_key = job_data.oauth_token;
   twit_cfg.access_token_secret = job_data.oauth_secret;
   var twitter_client = new twitter(twit_cfg);
-  _startBackfill(twitter_client);
+  return _startBackfill(twitter_client);
 }
 
 /*
@@ -130,7 +130,7 @@ function proccessNewJob(job, deleteJob)
 //job_king.init(config.twitter_backfill_tube, proccessNewJob, config.twitter_link_tube, job_king.spawnClientToRes);
 jobber.init(10, config.twitter_backfill_tube, config.twitter_link_tube, function()
 {
-  jobber.resJob(proccessNewJob)
+  return jobber.resJob(proccessNewJob)
 });
 
 
