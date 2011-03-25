@@ -37,7 +37,7 @@ function buildJob(tweet, url, twitter_id)
     
     job_manager.addJob(config.twitter_link_tube, job_spec, function(job_data)
     {
-      util.log('BUILT JOB FOR '+twitter_id);  
+      return util.log('BUILT JOB FOR '+twitter_id);  
     });
 }
 
@@ -62,12 +62,12 @@ function defineStream(following, job_id)
       
       stream.on('data', function (data) 
       {
-        parseSiteStreamTweet(data);
+        return parseSiteStreamTweet(data);
       });
 
       stream.on('end', function(data)
       { 
-        process.exit();
+        return process.exit();
       });
             
       if (job_id)
@@ -76,7 +76,7 @@ function defineStream(following, job_id)
         {
           job_manager.deleteJob(job_id, function(res)
           {
-            initJobs();
+            return initJobs();
           });
         });
       }
@@ -119,14 +119,14 @@ function initJobs()
          util.log({"status":'user already in stream', "twitter_id":job_data.twitter_id}); 
          job_manager.deleteJob(job.id, function(res)
          {
-           initJobs();
+           return initJobs();
          });
         }
         else
         {
           util.log({"status":"Adding stream from beanstalk", "type":"stream"});
           should_compact = true;
-          buildStream([job_data.twitter_id], job.id);
+          return buildStream([job_data.twitter_id], job.id);
         }
       });
       break;
@@ -140,7 +140,11 @@ function getAllStreamUsers(callback)
   {
     if (!err)
     {
-      callback(stream_ids);
+      return callback(stream_ids);
+    }
+    else
+    {
+      return util.log({"status":"error", "msg":err});
     }
   });  
 }
@@ -153,6 +157,6 @@ setInterval(process.exit, 300000);
 setInterval(function()
 {
   util.log('FULL STREAMS: '+full_streams.length);
-  util.log('PARTIAL STREAMS: '+partial_streams.length);
+  return util.log('PARTIAL STREAMS: '+partial_streams.length);
 }, 10000);
 
