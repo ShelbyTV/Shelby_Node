@@ -106,6 +106,9 @@ function parseFeed(feed, user_id)
 */
 function addLinkToQueue(feed_obj, user_id)
 {
+  
+ feed_obj.application ? delete feed_obj.application : '';
+  
   var job_spec =
   {
      "facebook_status_update":feed_obj,
