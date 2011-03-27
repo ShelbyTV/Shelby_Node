@@ -19,15 +19,21 @@ function initFbUser(job, deleteJobAndListen)
     if (is_in_set)
     {
       util.log({"status":"user already in set, deleting job"});
-      deleteJobAndListen();
+      return deleteJobAndListen();
     }
     else
     {
       fb_dao.setUserInfo(job.fb_id, {"facebook_id":job.fb_id, "access_token":job.fb_access_token, "last_seen":0}, function(err, res)
       {
-        if (err && !res) {util.log({"error":"user info not set"});deleteJobAndListen();return;}
-        getFeed(job.fb_id, deleteJobAndListen);
-        //2.wait for group interval
+        if (err && !res) 
+        {
+          util.log({"error":"user info not set"});
+          return deleteJobAndListen();
+        }
+        else
+        {
+          return getFeed(job.fb_id, deleteJobAndListen);  
+        }
       });  
     }
   });
@@ -42,18 +48,26 @@ function getFeed(user_id, deleteJobAndListen)
 { 
   fb_dao.getUserInfo(user_id, function(err, info)
   {
-    if (err && (!info || !info.length==3)) {util.log({"status":"ERR:info bad or not found"});deleteJobAndListen();return;}
+    if (err && (!info || !info.length==3)) 
+    {
+      util.log({"status":"ERR:info bad or not found"});
+      return deleteJobAndListen();
+    }
     
-    facebookClient.apiCall('GET','/'+user_id+'/home', {since:info.last_seen, access_token: info.access_token, fields:'type,source,name,from', limit:1000}, function(err, feed)
+    facebookClient.apiCall('GET','/'+user_id+'/home', {since:info.last_seen, access_token: info.access_token, /*fields:'type,source,name,from',*/ limit:1000}, function(err, feed)
     {
       if (err && (!feed || !feed.data)) {util.log({"status":"ERR:bad API call or no new feed data"});deleteJobAndListen();return;}
       util.getTimestamp('s', function(ts)
       {
         fb_dao.setUserProperty(user_id, 'last_seen', ts, function(err, res)
         {
-          if (err && !res){callback('ERR:last_seen not set', null); return;}
+          if (err && !res)
+          {
+            util.log({"error":"last seen not set!"}); 
+            return deleteJobAndListen();;
+          }
           deleteJobAndListen();
-          parseFeed(feed, user_id);  
+          return parseFeed(feed, user_id);  
         });
       });
     });          
@@ -100,10 +114,10 @@ function addLinkToQueue(feed_obj, user_id)
      "provider_user_id":user_id
   };
   
-  console.log(job_spec);
+  util.log(job_spec);
   jobber.putJob(job_spec, function(data)
   {
-    //do nothing
+    return;
   });
 }
 
@@ -114,8 +128,13 @@ function getAllUserFeeds()
 {
   fb_dao.getUserSet(function(err, members)
   {
-    if (err || !members.length) {util.log({status:"error retrieving fb users or no users", type:"fb_feed"});return;}
+    if (err || !members.length) 
+    {
+      return util.log({status:"error retrieving fb users or no users", type:"fb_feed"});
+    }
+    
     util.log({status:'initializing facebook polling from redis'});
+    
     for (var i in members)
     {
       getFeed(members[i], function(err, res)
