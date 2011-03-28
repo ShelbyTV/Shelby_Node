@@ -47,14 +47,11 @@ socket.on('connection', function(client){
 
 function removeClient(client, callback)
 {
-  util.log({"status":"removing client", "user_id":client.user_id});
   if (!client.hasOwnProperty.user_id)
   {
-    util.log('CLIENT WITHOUT UID');
-    return setTimeout(function(){
-      removeClient(client, function(){});
-      }, 20);
+    return;
   }
+  util.log({"status":"removing client", "user_id":client.user_id});
   delete Clients[client.user_id];
   logAllClients();
   return callback();
