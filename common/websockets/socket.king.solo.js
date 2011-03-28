@@ -27,7 +27,6 @@ socket.on('connection', function(client){
 	    case 'init':
 	    addNewClient(client, message.user_id, function()
 	    {
-	     util.log({"status":'adding client', "user_id":message.user_id});
 	     logAllClients();
 	    });
 	    break;
@@ -47,7 +46,7 @@ socket.on('connection', function(client){
 
 function removeClient(client, callback)
 {
-  if (!client.hasOwnProperty.user_id)
+  if (!client.user_id)
   {
     return;
   }
@@ -61,6 +60,7 @@ function addNewClient(client, user_id, callback)
 {
   client.user_id = user_id;
   Clients[user_id] = client;
+  util.log({"status":'adding client', "user_id":client.user_id});
   return callback();
 }
 
