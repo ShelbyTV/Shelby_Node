@@ -47,7 +47,7 @@ socket.on('connection', function(client){
 
 function removeClient(client, callback)
 {
-  if (!client.user_id)
+  if (!client.hasOwnProperty('user_id'))
   {
     return;
   }
