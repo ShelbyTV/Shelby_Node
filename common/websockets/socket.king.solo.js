@@ -6,6 +6,7 @@ var Clients = {};
 var util = require('../util.js');
 var job_king = require('../beanstalk/job.king.js');
 
+
 server = http.createServer(function(req, res) 
 { 
   res.writeHead(200, {'Content-Type': 'text/html'}); 
@@ -55,7 +56,16 @@ function removeClient(client, callback)
 function addNewClient(client, user_id, callback)
 {
   client.user_id = user_id;
-  Clients[user_id] = client;
+  
+  if (Clients.hasOwnProperty(user_id))
+  {
+    Clients[user_id].push(client);
+  }
+  else
+  {
+    Clients[user_id] = [];
+    Clients[user_id].push(client);
+  }
   return callback();
 }
 
@@ -70,9 +80,8 @@ function pushPayloadToClient(payload, user_id, callback)
    
    util.log({"status":"sending payload to user", "client":user_id});
    Clients[user_id].send(payload);    
-   
- }
- return callback();
+ } 
+return callback();
 }
 
 function logAllClients()
@@ -87,13 +96,11 @@ function logAllClients()
   util.log('ALL CLIENTS:');
   util.log(ids);
   delete ids;
+  console.log(Clients);
 }
 
 function proccessNewJob(job, deleteJobAndListen)
 { 
-  //var job_data = eval('(' + job.data + ')');
-  //var job_data = JSON.parse(job.data); 
- 
   if (job.payload && job.user_id)
   {  
     pushPayloadToClient(job.payload, job.user_id, function()
