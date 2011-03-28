@@ -47,15 +47,41 @@ socket.on('connection', function(client){
 
 function removeClient(client, callback)
 {
-  delete Clients[client.user_id];
-  logAllClients();
+  //delete Clients[client.user_id];
+  //logAllClients();
+  
+  console.log('REMOVING',client);
+  
+  for (var i in Clients[client.user_id])
+  {
+    if (Clients[client.user_id][i].user_id==client.user_id)
+    {
+      var removed_client = Clients[client.user_id].splice(i,1);    
+    }
+  }
+  
+  if (Clients[client.user_id].length===0)
+  {
+    delete Clients[client.user_id];
+  }
+  
+  removed_client = null;
   return callback();
 }
 
 function addNewClient(client, user_id, callback)
 {
   client.user_id = user_id;
-  Clients[user_id] = client;
+  
+  if (Clients.hasOwnProperty(user_id))
+  {
+    Clients[user_id].push(client);
+  }
+  else
+  {
+    Clients[user_id] = [];
+    Clients[user_id].push(client);
+  }
   return callback();
 }
 
@@ -68,19 +94,17 @@ function pushPayloadToClient(payload, user_id, callback)
  else
  { 
    util.log({"status":"sending payload to user", "client":user_id});
-   Clients[user_id].send(payload);
+   for (var i in Clients[user_id])
+   {
+     Clients[user_id][i].send(payload);  
+   }
  }
  return callback();
 }
 
 function logAllClients()
 { 
-  var ids = [];
-  for (var i in Clients)
-  {
-    ids.push(i);
-  }
-  console.log(ids);
+  console.log(Clients);
 }
 
 function proccessNewJob(job, deleteJobAndListen)
