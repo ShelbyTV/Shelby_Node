@@ -48,6 +48,13 @@ socket.on('connection', function(client){
 function removeClient(client, callback)
 {
   util.log({"status":"removing client", "user_id":client.user_id});
+  if (!client.hasOwnProperty.user_id)
+  {
+    util.log('CLIENT WITHOUT UID');
+    return setTimeout(function(){
+      removeClient(client, function(){});
+      }, 20);
+  }
   delete Clients[client.user_id];
   logAllClients();
   return callback();
@@ -72,7 +79,8 @@ function pushPayloadToClient(payload, user_id, callback)
    util.log({"status":"sending payload to user", "client":user_id});
    Clients[user_id].send(payload);    
  } 
-return callback();
+
+  return callback();
 }
 
 function logAllClients()
