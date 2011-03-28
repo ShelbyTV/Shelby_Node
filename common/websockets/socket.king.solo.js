@@ -39,7 +39,7 @@ socket.on('connection', function(client){
 	{  
 	  removeClient(client, function()
 	  {
-	    return logAllClients();
+	    //return logAllClients();
 	  });
 	});
 	
@@ -56,22 +56,13 @@ function removeClient(client, callback)
 function addNewClient(client, user_id, callback)
 {
   client.user_id = user_id;
-  
-  if (Clients.hasOwnProperty(user_id))
-  {
-    Clients[user_id].push(client);
-  }
-  else
-  {
-    Clients[user_id] = [];
-    Clients[user_id].push(client);
-  }
+  Clients[user_id] = client;
   return callback();
 }
 
 function pushPayloadToClient(payload, user_id, callback)
 {
- if (!Clients[user_id])
+ if (!Clients.hasOwnProperty(user_id))
  {
    util.log({"status":"user "+user_id+" not currently connected"});
  } 
@@ -96,7 +87,6 @@ function logAllClients()
   util.log('ALL CLIENTS:');
   util.log(ids);
   delete ids;
-  console.log(Clients);
 }
 
 function proccessNewJob(job, deleteJobAndListen)
