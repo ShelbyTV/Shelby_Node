@@ -45,7 +45,7 @@ socket.on('connection', function(client){
 });
 
 function removeClient(client, callback)
-{ 
+{
   util.log({"status":"removing client", "user_id":client.user_id});
   delete Clients[client.user_id];
   logAllClients();
@@ -67,8 +67,10 @@ function pushPayloadToClient(payload, user_id, callback)
  } 
  else
  { 
+   
    util.log({"status":"sending payload to user", "client":user_id});
-   Clients[user_id].send(payload);
+   Clients[user_id].send(payload);    
+   
  }
  return callback();
 }
@@ -76,15 +78,22 @@ function pushPayloadToClient(payload, user_id, callback)
 function logAllClients()
 { 
   var ids = [];
+  
   for (var i in Clients)
   {
     ids.push(i);
   }
-  console.log(ids);
+  
+  util.log('ALL CLIENTS:');
+  util.log(ids);
+  delete ids;
 }
 
 function proccessNewJob(job, deleteJobAndListen)
 { 
+  //var job_data = eval('(' + job.data + ')');
+  //var job_data = JSON.parse(job.data); 
+ 
   if (job.payload && job.user_id)
   {  
     pushPayloadToClient(job.payload, job.user_id, function()
