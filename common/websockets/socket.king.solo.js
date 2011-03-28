@@ -38,7 +38,6 @@ socket.on('connection', function(client){
 	{  
 	  removeClient(client, function()
 	  {
-	    util.log({"status":"removing client", "user_id":client.user_id});
 	    return logAllClients();
 	  });
 	});
@@ -46,7 +45,8 @@ socket.on('connection', function(client){
 });
 
 function removeClient(client, callback)
-{
+{ 
+  util.log({"status":"removing client", "user_id":client.user_id});
   delete Clients[client.user_id];
   logAllClients();
   return callback();
