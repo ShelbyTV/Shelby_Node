@@ -60,7 +60,7 @@ function removeClient(client, callback)
     }
   }
   
-  if (Clients[client.user_id].length===0)
+  if (Clients[client.user_id] && Clients[client.user_id].length===0)
   {
     delete Clients[client.user_id];
   }
