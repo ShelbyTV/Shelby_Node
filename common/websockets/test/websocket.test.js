@@ -1,9 +1,9 @@
 //config//
-var config = require('../config.js');
+var config = require('../../config.js');
 //util//
-var util = require('../util.js');
+var util = require('../../util.js');
 //beanstalk//
-var bs = require('../beanstalk/beanstalk_client.js').Client(config.beanstalkd_uri);
+var bs = require('../../beanstalk/beanstalk_client.js').Client(config.beanstalkd_uri);
 //.........//
 
 var message = //this is a sample job - and the key names need to change for twitter.js
