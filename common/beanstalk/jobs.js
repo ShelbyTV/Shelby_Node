@@ -4,7 +4,6 @@ util = require('../util.js'),
 beanstalk = require('beanstalk_client').Client,
 RP = require('../respool.js');
 
-
 function JobManager(res_tube, put_tube, do_job){
  
   var self = this;
@@ -29,9 +28,11 @@ function JobManager(res_tube, put_tube, do_job){
     self.respool.getResource(function(err, cl){
       cl.watch(self.resTube, function(err, res){
         cl.reserve(function(err, job_id, job_json){
+          util.log({"src":"JobManager", "status":"got job", "id":job_id});
           self.reserve(callback);
           self.doJob(JSON.parse(job_json), function(){
             cl.destroy(job_id, function(err ,res){
+              util.log({"src":"JobManager", "status":"deleted job", "id":job_id});
               self.respool.freeResource(cl, function(err, res){
                 return callback(null, 'OK');
               });
@@ -46,6 +47,7 @@ function JobManager(res_tube, put_tube, do_job){
     self.respool.getResource(function(err, cl){
       cl.use(self.putTube, function(err, res){
         cl.put(0, 0, 1, encodeURIComponent(JSON.stringify(job)), function(err, job_id){
+          util.log({"src":"JobManager","status":"added job", "id":job_id});
           self.respool.freeResource(cl, function(err, res){
             return callback(null, 'OK');
           });
@@ -55,31 +57,6 @@ function JobManager(res_tube, put_tube, do_job){
   };    
 }
 
-var j = new JobManager(config.websocket.tube, 'bar', function(job, job_done){
-  console.log(job);
-  job_done();
-});
-
-j.poolect(3, function(err, res){
-  j.reserve(console.log);
-});
-
-
-/*
-//TODO...
-exports.spawnClientToPut = function(tub, job)
-{
-  console.log('spawning client');
-  client.connect(config.beanstalk.uri+':11300', function(err, conn) 
-  {
-    conn.use(tube, function() 
-    {
-      conn.put(0, 0, 1, JSON.stringify(job), function(err, job_id) 
-      {
-        console.log('added job: ' + job_id);
-        conn = null;
-      });
-    });
-  });  
-}
-*/
+exports.create = function(res_tube, put_tube, do_job){
+  return new JobManager(res_tube, put_tube, do_job);
+};
