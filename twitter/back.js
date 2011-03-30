@@ -107,8 +107,7 @@ function BackfillManager(){
   };
   
   this.init = function(){
-    var j = JobManager.create(config.twitter_backfill_tube, config.twitter_link_tube, self.proccessNewJob);
-    self.jobber = j;
+    self.jobber = JobManager.create(config.twitter_backfill_tube, config.twitter_link_tube, self.proccessNewJob);
     
     self.jobber.poolect(20, function(err, res){
       self.jobber.reserve(function(err, res){
