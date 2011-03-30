@@ -87,7 +87,7 @@ function WSManager(){
    
     var j = JobManager.create(config.websocket.tube, null, self.proccessNewJob);
 
-    j.poolect(3, function(err, res){
+    j.poolect(20, function(err, res){
       j.reserve(function(err, res){
         return;
       });

@@ -173,6 +173,6 @@ jobber.init(10, config.facebook.tube_add, config.twitter_link_tube, function()
 setInterval(function()
 {
   getAllUserFeeds();
-}, 60000);
+}, 300000);
 
 

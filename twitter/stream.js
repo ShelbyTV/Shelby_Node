@@ -152,7 +152,7 @@ function getAllStreamUsers(callback)
 
 getAllStreamUsers(buildStream);
 initJobs();
-setInterval(process.exit, 300000);
+setInterval(process.exit, 600000);
 
 setInterval(function()
 {
