@@ -4,7 +4,7 @@ io   = require('socket.io'),
 http = require('http'),
 Clients = {},
 util = require('../util.js'),
-jobber = require('../beanstalk/jobber.js');
+JobManager = require('../beanstalk/jobs.js');
 
 function logAllClients(){ 
   var ids = [];
@@ -50,12 +50,10 @@ function WSManager(){
   };
 
   this.proccessNewJob = function(job, deleteJobAndListen){ 
-    job.data = JSON.parse(job.data);  
-
-    if (job.data.payload && job.data.user_id){  
-      return self.pushPayloadToClient(job.data.payload, job.data.user_id, deleteJobAndListen);
+    if (job.payload && job.user_id){  
+      return self.pushPayloadToClient(job.payload, job.user_id, deleteJobAndListen);
     } else {
-        util.log({"status":"bad/null job data"});
+        util.log({"src":"WSManager", "status":"bad/null job data"});
         return deleteJobAndListen();
     }
   };
@@ -66,8 +64,7 @@ function WSManager(){
       res.end(); 
     });
 
-    //server.listen(config.websocket.server_port, config.websocket.server_uri);
-    server.listen(5666, config.websocket.server_uri);
+    server.listen(config.websocket.server_port, config.websocket.server_uri);
     
     console.log('socket webserver listening on '+config.websocket.server_uri+':'+config.websocket.server_port);
 
@@ -87,12 +84,17 @@ function WSManager(){
         self.removeClient(client, function(){});
       });
     });
+   
+    var j = JobManager.create(config.websocket.tube, null, self.proccessNewJob);
 
-    jobber.init(10, config.websocket.tube, null, function(){ 
-      jobber.resJob(self.proccessNewJob);
-    });  
+    j.poolect(3, function(err, res){
+      j.reserve(function(err, res){
+        return;
+      });
+    });
+      
   }; 
-}
+} 
 
 var ws = new WSManager();
 ws.init();
