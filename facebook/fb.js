@@ -153,6 +153,6 @@ f.getAllUserFeeds();
 setInterval(function()
 {
   f.getAllUserFeeds();
-}, 30000);
+}, 150000);
 
 
