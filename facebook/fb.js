@@ -44,9 +44,7 @@ function FacebookManager(){
       }
       
       facebookClient.apiCall('GET','/'+user_id+'/home', {since:info.last_seen, access_token: info.access_token, /*fields:'type,source,name,from',*/ limit:1000}, function(err, feed){
-        util.log(err);
-        util.log('USER:'+user_id);
-        util.log('ACCESSTOKEN:'+info.access_token);
+        err ? util.log(err) : '';
         if (err || !(feed && feed.data)) {util.log({"status":"ERR:bad API call or no new feed data"});deleteJobAndListen();return;}
         util.getTimestamp('s', function(ts){
           fb_dao.setUserProperty(user_id, 'last_seen', ts, function(err, res){
