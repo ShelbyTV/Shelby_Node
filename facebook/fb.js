@@ -117,7 +117,6 @@ function FacebookManager(){
             if (err){
               return util.log(err);
             }
-            util.log(res);
           });  
         }
       }
