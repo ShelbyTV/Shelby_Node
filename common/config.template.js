@@ -50,6 +50,6 @@ exports.facebook =
 
 exports.sets =
 {
-  redis_port: 6380,
+  redis_port: '6380',
   redis_server: '127.0.0.1'
 }
