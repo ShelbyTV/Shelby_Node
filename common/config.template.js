@@ -47,3 +47,9 @@ exports.facebook =
   app_secret: '416ce973e4a78ca6a99227731946b27b',
   tube_add: 'fb_add_user'
 }
+
+exports.sets =
+{
+  redis_port: 6380,
+  redis_server: '127.0.0.1'
+}

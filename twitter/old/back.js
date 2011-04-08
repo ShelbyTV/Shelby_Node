@@ -52,6 +52,7 @@ function BackfillManager(){
   * Begin the backfill proccess. Named start due to asyncness
   */
   this.startBackfill = function(twit_client, twitter_user_id, deleteJob){  
+    deleteJob();
     var page_counter = 0;
 
     for(var p=page_start; p>0; p-=1){ 
@@ -62,7 +63,7 @@ function BackfillManager(){
         
         if (page_counter==17) { 
           twit_client = null;
-          deleteJob();
+//          deleteJob();
         }
 
         self.getPageLinks(page, function(link, tweet){
