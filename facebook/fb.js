@@ -45,6 +45,8 @@ function FacebookManager(){
       }
       
       facebookClient.apiCall('GET','/'+user_id+'/home', {since:info.last_seen, access_token: info.access_token, /*fields:'type,source,name,from',*/ limit:1000}, function(err, feed){
+        util.log('GOT FEED');
+        util.log(feed);
         err ? util.log(err) : '';
         if (err || !(feed && feed.data)) {return util.log({"status":"ERR:bad API call or no new feed data"});}
         util.getTimestamp('s', function(ts){
