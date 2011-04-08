@@ -14,6 +14,7 @@ function FacebookManager(){
   * deleteJobAndListen : function : delete current job from bs
   */
   this.initFbUser = function(job, deleteJobAndListen){
+    console.log('JOB:', job);
     fb_dao.userIsInSet(job.fb_id, function(is_in_set){
       if (is_in_set){
         util.log({"status":"user already in set, deleting job"});
@@ -24,7 +25,8 @@ function FacebookManager(){
             util.log({"error":"user info not set"});
             return deleteJobAndListen();
           }else{
-            return self.getFeed(job.fb_id, deleteJobAndListen);  
+            deleteJobAndListen();
+            return self.getFeed(job.fb_id);  
           }
         });  
       }
@@ -39,20 +41,17 @@ function FacebookManager(){
   this.getFeed = function(user_id, deleteJobAndListen){ 
     fb_dao.getUserInfo(user_id, function(err, info){
       if (err && !(info && info.length==3)){
-        util.log({"status":"ERR:info bad or not found"});
-        return deleteJobAndListen();
+        return util.log({"status":"ERR:info bad or not found"});
       }
       
       facebookClient.apiCall('GET','/'+user_id+'/home', {since:info.last_seen, access_token: info.access_token, /*fields:'type,source,name,from',*/ limit:1000}, function(err, feed){
         err ? util.log(err) : '';
-        if (err || !(feed && feed.data)) {util.log({"status":"ERR:bad API call or no new feed data"});deleteJobAndListen();return;}
+        if (err || !(feed && feed.data)) {return util.log({"status":"ERR:bad API call or no new feed data"});}
         util.getTimestamp('s', function(ts){
           fb_dao.setUserProperty(user_id, 'last_seen', ts, function(err, res){
             if (err && !res){
-              util.log({"error":"last seen not set!"}); 
-              return deleteJobAndListen();
+              return util.log({"error":"last seen not set!"}); 
             }
-            deleteJobAndListen();
             return self.parseFeed(feed, user_id);  
           });
         });

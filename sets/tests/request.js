@@ -1,14 +1,14 @@
 var http = require('http');
 var util = require('../../common/util.js');
 
-var uid = 332;
-var vid = 1102;
+var uid = Math.floor(Math.random()*1000);
+var vid = Math.floor(Math.random()*1000);
 
 
 var options = {
   host: '0.0.0.0',
   port: 7531,
-  path: '/like?u='+uid+'&v='+vid
+  path: '/like?h='+uid+'&m='+vid
 };
 
 http.get(options, function(res) {
