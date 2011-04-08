@@ -19,11 +19,14 @@ function TwitterStreamManager(){
   
   this.parseSiteStreamTweet = function(tweet){
     if (tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length){
+      /*
       for (var i in tweet.message.entities.urls){
         if (tweet.message.entities.urls.hasOwnProperty(i)){
           self.buildJob(tweet.message, tweet.message.entities.urls[i], tweet.for_user);  
         }
-      }     
+      } 
+      */
+      self.buildJob(tweet.message, tweet.message.entities.urls[0], tweet.for_user);      
     }
   };
 
