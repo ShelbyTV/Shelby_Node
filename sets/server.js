@@ -3,6 +3,7 @@ var url = require('url');
 var sets = require('./sets.js').new();
 
 
+/*
 http.createServer(function (req, res) {
   res.writeHead(200, {'Content-Type': 'text/plain'});
   var params = url.parse(req.url, true);
@@ -16,3 +17,5 @@ http.createServer(function (req, res) {
   });
 }).listen(7531, "0.0.0.0");
 console.log('Server running at http://0.0.0.0:7531/');
+*/
+

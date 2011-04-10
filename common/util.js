@@ -8,6 +8,11 @@ exports.log = function(data)
 
 exports.async = require('async');
 
+exports.hasProperty = function(obj, prop){
+  return (obj.hasOwnProperty(prop) && obj[prop]);
+};
+
+
 //exports.resolveURL = require('./resolver.js').resolveURL;
 
 /*

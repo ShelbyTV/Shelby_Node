@@ -54,7 +54,21 @@ function JobManager(res_tube, put_tube, do_job){
         });
       });
     });
+  };
+  
+  this.putJson = function(job, callback){
+    self.respool.getResource(function(err, cl){
+      cl.use(self.putTube, function(err, res){
+        cl.put(0, 0, 10000, JSON.stringify(job), function(err, job_id){
+          util.log({"src":"JobManager","status":"added job", "id":job_id});
+          self.respool.freeResource(cl, function(err, res){
+            return callback(null, 'OK');
+          });
+        });
+      });
+    });
   };    
+      
 }
 
 exports.create = function(res_tube, put_tube, do_job){

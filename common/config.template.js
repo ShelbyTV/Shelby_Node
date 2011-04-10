@@ -51,5 +51,6 @@ exports.facebook =
 exports.sets =
 {
   redis_port: '6380',
-  redis_server: '127.0.0.1'
+  redis_server: '127.0.0.1',
+  add_usr_like_vid_tube: 'add_usr_like_vid'
 }
