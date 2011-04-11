@@ -7,6 +7,47 @@ function Sets(){
   
   var self = this;
   
+  this.makeMetas = function(job, callback){
+    
+    //owner: a video, members: users who liked it
+    var inverse = {
+      "owner":{
+        "name":job.params.collection.name,
+        "val":job.params.collection.val
+      },
+      "collection":{
+        "name":job.params.owner.name,
+        "val":job.params.owner.val
+      }
+    };
+    
+    //ie set of all users that have liked vids
+    var meta_object_a = {
+      "owner":{
+        "name":job.params.owner.name,
+        "val":"all"
+      },
+      "collection":{
+        "name":job.params.collection.name,
+        "val":job.params.collection.val
+      }
+    };
+    
+    //ie set of all vids that have been liked
+    var meta_object_b = {
+      "owner":{
+        "name":job.params.collection.name,
+        "val":"all"
+      },
+      "collection":{
+        "name":job.params.owner.name,
+        "val":job.params.owner.val
+      }
+    };
+    
+    return callback(null, [inverse, meta_object_a, meta_object_b]);
+  };
+  
   this.validate = function(job, callback){
     if (!util.hasProperty(job, 'action')){
       return callback('Job needs an action attr');
@@ -40,7 +81,10 @@ function Sets(){
       
       switch(job.action){
         case 'add':
-        dao.addMember(job.params, console.log);
+        self.makeMetas(job, function(err ,metas){
+          metas.push(job.params);
+          dao.addMembers(metas);
+        });
         break;
       }
     });    
