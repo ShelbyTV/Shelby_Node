@@ -110,7 +110,7 @@ function TwitterStreamManager(){
   };  
   
   this.getAllStreamUsers = function(callback){
-      stream_ids = ['17368581'];
+      stream_ids = ['9116012'];
         return callback(stream_ids);
   };
   
