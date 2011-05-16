@@ -96,7 +96,7 @@ function TwitterStreamManager(){
       util.log('BUILDING STREAM FOR:');
       util.log(stream_ids);
       self.defineStream(stream_ids, deleteJob);
-    }, 1000);
+    }, 5000);
   };
   
   this.processNewJob = function(job, deleteJob){
