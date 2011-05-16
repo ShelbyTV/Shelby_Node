@@ -81,6 +81,7 @@ function TwitterStreamManager(){
     }
     id_arrays.push(ids); //one id_arr for each stream  
 
+/* deprecated for rate limiter
     for (var i in id_arrays){ 
       if (id_arrays.hasOwnProperty(i)){
         util.log('BUILDING STREAM FOR:');
@@ -88,6 +89,14 @@ function TwitterStreamManager(){
         self.defineStream(id_arrays[i], deleteJob);  
       }
     }
+*/
+    var rateLimiter = setInterval(function(){
+      var stream_ids = id_arrays.shift();
+      if (!stream_ids) return clearInterval(rateLimiter);
+      util.log('BUILDING STREAM FOR:');
+      util.log(stream_ids);
+      self.defineStream(stream_ids, deleteJob);
+    }, 1000);
   };
   
   this.processNewJob = function(job, deleteJob){
