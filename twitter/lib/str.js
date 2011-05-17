@@ -8,7 +8,6 @@ var TwitterStream = function(sort_order){
   this.sortOrder = sort_order;
   this.full_streams = [];
   this.partial_streams = [];
-  redis = require('redis').createClient(config.redis_config.port, config.redis_config.server); 
   this.bind('redis:all_users', this.chunkizeFollowers);
   this.bind('stream:followers', this.defineStream);
   this.bind('tweet:parsed', this.buildJob);
