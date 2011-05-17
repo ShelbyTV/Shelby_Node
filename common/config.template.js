@@ -54,3 +54,13 @@ exports.sets =
   redis_server: '127.0.0.1',
   add_usr_like_vid_tube: 'add_usr_like_vid'
 }
+
+exports.resolver =
+{
+  tube_add:'resolver_tube_add'
+}
+
+exports.embedly =
+{
+  tube_add:'embedly_tube_add'
+}
