@@ -96,7 +96,7 @@ function TwitterStreamManager(){
       util.log('BUILDING STREAM FOR:');
       util.log(stream_ids);
       self.defineStream(stream_ids, deleteJob);
-    }, 5000);
+    }, 1000);
   };
   
   this.processNewJob = function(job, deleteJob){
@@ -108,8 +108,7 @@ function TwitterStreamManager(){
          return deleteJob();
         } else {
           util.log({"status":"Adding stream from beanstalk", "type":"stream"});
-          should_compact = true;
-          return self.buildStream([job.twitter_id], deleteJob);
+          should_compact = true; return self.buildStream([job.twitter_id], deleteJob);
         }
       });
       break;
@@ -120,7 +119,7 @@ function TwitterStreamManager(){
   };  
   
   this.getAllStreamUsers = function(callback){
-    redis.smembers(config.redis_config.stream_key, function(err, stream_ids){
+    redis.sort(config.redis_config.stream_key, 'ASC', function(err, stream_ids){
       if (!err){
         return callback(stream_ids);
       } else {
@@ -145,10 +144,9 @@ function TwitterStreamManager(){
 var str = new TwitterStreamManager();
 str.getAllStreamUsers(str.buildStream);
 str.init();
-setInterval(process.exit, 600000);
+setInterval(process.exit, 1200000);
 
-setInterval(function()
-{
+setInterval(function(){
   util.log('FULL STREAMS: '+full_streams.length);
   return util.log('PARTIAL STREAMS: '+partial_streams.length);
 }, 10000);
