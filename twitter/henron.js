@@ -41,6 +41,7 @@ function TwitterStreamManager(){
 
   this.defineStream = function(following, deleteJob){
     twit.stream('site', {"follow":following, "with":'followings'}, function(stream){   
+console.log(stream);
         var stream_object = {
           "stream":stream,
           "following":following
@@ -53,6 +54,7 @@ function TwitterStreamManager(){
         }
 
         stream.on('data', function (data) {
+	  console.log(data);
           return self.parseSiteStreamTweet(data);
         });
 
@@ -110,7 +112,7 @@ function TwitterStreamManager(){
   };  
   
   this.getAllStreamUsers = function(callback){
-      stream_ids = ['17368581'];
+      stream_ids = ['50', '17368581'];
         return callback(stream_ids);
   };
   

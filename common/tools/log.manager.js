@@ -12,5 +12,5 @@ function truncateLogs()
   
   console.log('files trunced');
 }
-
+truncateLogs();
 setInterval(truncateLogs, (600000));
