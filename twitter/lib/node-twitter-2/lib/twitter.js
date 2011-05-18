@@ -2,7 +2,7 @@ var	VERSION = '0.1.17',
 	http = require('http'),
 	querystring = require('querystring'),
 	oauth = require('oauth'),
-	cookie = require('../../cookie-node'),
+	cookie = require('cookies'),
 	streamparser = require('./parser');
 
 function merge(defaults, options) {
@@ -196,8 +196,7 @@ Twitter.prototype.stream = function(method, params, callback) {
 		// Workaround for node-oauth vs. twitter commas-in-params bug
 		if ( params && params.track && Array.isArray(params.track) ) {
 			params.track = params.track.join(',')
-		}
-
+		} 
 	} else if (method === 'site') {
 		stream_base = this.options.site_stream_base;
 		// Workaround for node-oauth vs. twitter double-encode-commas bug
@@ -212,17 +211,22 @@ Twitter.prototype.stream = function(method, params, callback) {
 	var request = this.oauth.post(url + '?' + querystring.stringify(params),
 		this.options.access_token_key,
 		this.options.access_token_secret);
-
+  //console.log(request.agent);
 	var stream = new streamparser();
 	stream.destroy = function() {
+    console.log('STREAM DESTROY CALLED');
 		// FIXME: should we emit end/close on explicit destroy?
-		if ( typeof request.abort === 'function' )
+		if ( typeof request.abort === 'function' ){
 			request.abort(); // node v0.4.0
-		else
+      console.log('bar');
+    } else {
+      console.log('foo');
 			request.socket.destroy();
+    }
 	};
 
 	request.on('response', function(response) {
+    console.log('GOT RESPONSE');
 		// FIXME: Somehow provide chunks of the response when the stream is connected
 		// Pass HTTP response data to the parser, which raises events on the stream
 		response.on('data', function(chunk) {

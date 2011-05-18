@@ -27,7 +27,7 @@ TwitterStream.prototype.initialize = function(){
 TwitterStream.prototype.initJobQueue = function(){
   var self = this;
   this.jobber = require('../../common/beanstalk/jobs.js').create(config.twitter_stream_tube_add, config.twitter_link_tube, self.addNewUser);
-  return this.jobber.poolect(20, function(){self.jobber.reserve(console.log)});
+  return this.jobber.poolect(20, function(){self.jobber.reserve(console.log);});
 };
 
 /*
@@ -56,7 +56,7 @@ TwitterStream.prototype.addNewUser = function(job, deleteJob){
  */
 TwitterStream.prototype.parseTweet = function(tweet){
   var self = this;
-  if (!(tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length)) return;
+  if (!(tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length)) {return;}
   for (var i in tweet.message.entities.urls){
     if (tweet.message.entities.urls.hasOwnProperty(i)){
       self.trigger('tweet:parsed', tweet.message, tweet.message.entities.urls[i], tweet.for_user);
@@ -77,16 +77,13 @@ TwitterStream.prototype.defineStream = function(following){
       "following":following
     };
 
-    following.length == config.twitter_stream_limit ? self.full_streams.push(stream_object) : self.partial_streams.push(stream_object);
+   // following.length == config.twitter_stream_limit ? self.full_streams.push(stream_object) : self.partial_streams.push(stream_object);
 
     stream.on('data', function (data) {
-      console.log('DATA FOR', stream_object.following);
       return self.parseTweet(data);
     });
 
     stream.on('end', function(data) { 
-      console.log('DISCONNECT', stream_object.following);
-      //return process.exit();
     });
 
     stream.on('error', function(data){
@@ -131,7 +128,7 @@ TwitterStream.prototype.chunkizeFollowers = function(ids){
  var rateMaker = function(){
    setInterval(function(){
      var stream_ids = id_arrays.shift();
-     if (!stream_ids) return clearInterval(this);
+     if (!stream_ids) {return clearInterval(this);}
      console.log('BUILDING STREAM FOR:', stream_ids);
      self.trigger('stream:followers', stream_ids);
    },100);
@@ -145,7 +142,7 @@ TwitterStream.prototype.chunkizeFollowers = function(ids){
 TwitterStream.prototype.getAllStreamUsers = function(){
   var self = this;
   redis.sort(config.redis_config.stream_key, this.sortOrder, function(err, stream_ids){
-    if (!err) return self.trigger('redis:all_users', stream_ids);
+    if (!err) {return self.trigger('redis:all_users', stream_ids);}
   });
 };
 
