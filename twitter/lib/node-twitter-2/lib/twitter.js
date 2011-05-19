@@ -211,22 +211,17 @@ Twitter.prototype.stream = function(method, params, callback) {
 	var request = this.oauth.post(url + '?' + querystring.stringify(params),
 		this.options.access_token_key,
 		this.options.access_token_secret);
-  //console.log(request.agent);
 	var stream = new streamparser();
 	stream.destroy = function() {
-    console.log('STREAM DESTROY CALLED');
 		// FIXME: should we emit end/close on explicit destroy?
 		if ( typeof request.abort === 'function' ){
 			request.abort(); // node v0.4.0
-      console.log('bar');
     } else {
-      console.log('foo');
 			request.socket.destroy();
     }
 	};
 
 	request.on('response', function(response) {
-    console.log('GOT RESPONSE');
 		// FIXME: Somehow provide chunks of the response when the stream is connected
 		// Pass HTTP response data to the parser, which raises events on the stream
 		response.on('data', function(chunk) {
