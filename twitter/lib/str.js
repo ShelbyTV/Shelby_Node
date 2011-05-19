@@ -77,13 +77,15 @@ TwitterStream.prototype.defineStream = function(following){
       "following":following
     };
 
-   // following.length == config.twitter_stream_limit ? self.full_streams.push(stream_object) : self.partial_streams.push(stream_object);
+    following.length == config.twitter_stream_limit ? self.full_streams.push(stream_object) : self.partial_streams.push(stream_object);
 
     stream.on('data', function (data) {
       return self.parseTweet(data);
     });
 
     stream.on('end', function(data) { 
+      self.trigger('disconnect'); 
+      console.log('--DISCONNECT--');
     });
 
     stream.on('error', function(data){
