@@ -110,7 +110,7 @@ function BackfillManager(){
   };
   
   this.init = function(){
-    self.jobber = JobManager.create(config.twitter_backfill_tube, config.twitter_link_tube, self.proccessNewJob); 
+    self.jobber = JobManager.create(config.twitter_backfill_tube, config.link_tube_high, self.proccessNewJob); 
      console.log(config.twitter_backfill_tube, config.twitter_link_tube);
      self.jobber.poolect(20, function(err, res){
      setInterval(function(){console.log('POOL SIZE:', self.jobber.respool.pool.length)}, 5000); 

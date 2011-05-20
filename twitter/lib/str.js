@@ -26,7 +26,7 @@ TwitterStream.prototype.initialize = function(){
  */
 TwitterStream.prototype.initJobQueue = function(){
   var self = this;
-  this.jobber = require('../../common/beanstalk/jobs.js').create(config.twitter_stream_tube_add, config.twitter_link_tube, self.addNewUser);
+  this.jobber = require('../../common/beanstalk/jobs.js').create(config.twitter_stream_tube_add, config.link_tube, self.addNewUser);
   return this.jobber.poolect(20, function(){self.jobber.reserve(console.log);});
 };
 

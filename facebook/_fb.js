@@ -131,7 +131,7 @@ function FacebookManager(){
   * Initialize job-queue listening
   */
   this.init = function(){
-    self.jobber = JobManager.create(config.facebook.tube_add, config.twitter_link_tube, self.initFbUser);
+    self.jobber = JobManager.create(config.facebook.tube_add, config.link_tube, self.initFbUser);
     
     self.jobber.poolect(20, function(err, res){
       self.jobber.reserve(function(err, res){
