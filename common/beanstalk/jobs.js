@@ -1,8 +1,10 @@
 var config = require('../config.js'),
 async = require('async'),  
 util = require('../util.js'),
-beanstalk = require('beanstalk_client').Client,
+beanstalk = require('./node-beanstalk-client/lib/beanstalk_client.js').Client,
 RP = require('../respool.js');
+
+beanstalk.bind('stream_end', process.exit});
 
 function JobManager(res_tube, put_tube, do_job){
  

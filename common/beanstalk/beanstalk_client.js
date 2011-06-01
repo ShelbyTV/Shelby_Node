@@ -137,6 +137,7 @@ BeanstalkClient.prototype.command = function(obj) {
 	var dataHandler = function(data) {
 		Debug.log('response:');
 		Debug.log(data);
+    console.log('GOT DATA');
 		cmd.emit('data', data, obj);
 	};
 	
@@ -167,7 +168,7 @@ BeanstalkClient.prototype.command = function(obj) {
 		});
 
 		this.conn.addListener('close', function(err) {
-      _self.emit('close', err);
+      //_self.emit('close', err);
 			Debug.log('connection closed');
 		});
 

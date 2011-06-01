@@ -4,13 +4,12 @@ util = require('../util.js'),
 beanstalk = require('beanstalk_client').Client,
 RP = require('../respool.js');
 
-function JobManager(res_tube, put_tube, do_job, do_job_object){
+function JobManager(res_tube, put_tube, do_job){
  
   var self = this;
   self.resTube = res_tube;
   self.putTube = put_tube;
   self.doJob = do_job;
-  self.doJobObject = do_job_object;
   self.respool = RP.createPool();
   
   this.poolect = function(num_clients, callback){
