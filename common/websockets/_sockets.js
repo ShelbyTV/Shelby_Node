@@ -112,5 +112,6 @@ WSManager.prototype.logAllClients = function(){
 var ws = new WSManager();
 ws.init();
 setInterval(function(){
-  console.log(ws.jobber.respool.pool.length);
-}, 5000);
+  console.log('POOLCOUNT:', ws.jobber.respool.pool.length);
+}, 60000);
+setInterval(function(){process.exit},1200000);
