@@ -3,7 +3,7 @@ sys  = require('sys'),
 io   = require('socket.io'),
 http = require('http'),
 util = require('../util.js'),
-JobManager = require('../beanstalk/jobs.js');
+JobManager = require('../beanstalk/_jobs.js');
 
 var WSManager = function(){
   this.Clients = {};
