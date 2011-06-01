@@ -167,6 +167,7 @@ BeanstalkClient.prototype.command = function(obj) {
 		});
 
 		this.conn.addListener('close', function(err) {
+      _self.emit('close', err);
 			Debug.log('connection closed');
 		});
 
