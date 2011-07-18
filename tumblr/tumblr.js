@@ -1,169 +1,146 @@
-var config = require('../common/config.js');
-var util = require('../common/util.js');
-//var tumblrClient = require('tumblr-js')(config.tumblr.key, config.tumblr.secret);
-var tumblr_dao = require('./lib/tumblr_dao.js');
-var JobManager = require('../common/beanstalk/jobs.js');
+var config = require('../common/config.js'),
+page_start = 12,
+util = require('../common/util.js'),
+oauth = require('./lib/oauth').OAuth,
+JobManager = require('../common/beanstalk/jobs.js'),
+async = require('async');
 
-function TumblrManager(){
+function BackfillManager(){
   
   var self = this;
-  /*
-  * Initialize tumblr metadata in redis (if user does not exist)
-  * job : obj : beanstalk job
-  * deleteJobAndListen : function : delete current job from bs
-  */
-  this.initTumblrUser = function(job, deleteJobAndListen){
-    console.log('JOB:', job);
-    tumblr_dao.userIsInSet(job.tumblr_id, function(is_in_set){
-      if (is_in_set){
-        util.log({"status":"user already in set, deleting job"});
-        return deleteJobAndListen();
-      }else{
-        tumblr_dao.setUserInfo(job.tumblr_id, {"tumblr_id":job.tumblr_id, "access_token":job.tumblr_access_token, "last_seen":0}, function(err, res){
-          if (err && !res){
-            util.log({"error":"user info not set"});
-            return deleteJobAndListen();
-          }else{
-            deleteJobAndListen();
-            return self.getFeed(job.tumblr_id, true);  
-          }
-        });  
-      }
-    });
-  };
 
   /*
-  * Make API call to tumblr to get a given users feed
-	* ???? NEED TO USE OAUTH TOKEN ????
-  * user_id : int || string : user tumblr id
-  * deleteJobAndListen : function : delete current job from bs
+  * Begin the backfill proccess. Named start due to asyncness
   */
-  this.getFeed = function(user_id, is_backfill){ 
-    fb_dao.getUserInfo(user_id, function(err, info){
-      if (err && !(info && info.length==3)){
-        return util.log({"status":"ERR:info bad or not found"});
-      }
+  this.startBackfill = function(twit_client, twitter_user_id, deleteJob){  
+    var page_counter = 0;
+    for(var p=page_start; p>0; p-=1){ 
+      util.log({status:'retrieving pages', type:'backfill', twitter_id:twitter_user_id});
       
-      facebookClient.apiCall('GET','/'+user_id+'/home', {since:info.last_seen, access_token: info.access_token, /*fields:'type,source,name,from',*/ limit:1000}, function(err, feed){
-        util.log('GOT FEED');
-        util.log(feed);
-        err ? util.log(err) : '';
-        if (err || !(feed && feed.data)) {return util.log({"status":"ERR:bad API call or no new feed data"});}
-        util.getTimestamp('s', function(ts){
-          fb_dao.setUserProperty(user_id, 'last_seen', ts, function(err, res){
-            if (err && !res){
-              return util.log({"error":"last seen not set!"}); 
-            }
-            return self.parseFeed(feed, user_id, is_backfill);  
-          });
+      self.getPage(twit_client, p, function(page){ 
+        page_counter+=1;
+        
+        if (page_counter==17) { 
+          twit_client = null;
+        }
+
+        self.getPageLinks(page, function(link, tweet){
+          return self.addLinkToQueue(link, tweet, twitter_user_id);
         });
-      });          
-    });
+      });
+    }  
   };
 
   /*
-  * Validate presence of feed data - delete job - pass each element to addLinkToQueue
-  * feed : obj : all metadata for facebook update
-  * user_id : int || string : facebook user id
-  * deleteJobAndListen : function : delete current job from bs
+  * Get the page_num page for a given user (oauth in the twit_client)
   */
-  this.parseFeed = function(feed, user_id, is_backfill){ 
-    var feed_length = feed.data.length;
-
-    if (feed && feed.data && feed.data.length){
-      util.log({"status":"feed retrieved now parsing", "type":"fb_feed"});     
-      for (var i in feed.data){
-        if (feed.data[i] && feed.data[i].type && feed.data[i].type=='video' && feed.data[i].source){
-  	      self.addLinkToQueue(feed.data[i], user_id, is_backfill);
-        }	
-      }	
-    }
+  this.getPage = function(page_num, callback){
+		oauth.get(req_url, tumblrAccessToken, tumblrAccessTokenSecret, function(error, data) {
+		  if(error) {console.log(require('sys').inspect(error));}
+		  else {
+		    var dashboard = JSON.parse(data);
+			console.log(dashboard.response.posts[0].date);
+		  }
+		});
+	
+    twit_client.get('/statuses/home_timeline.json', {include_entities:true, count:200, page:page_num}, function(page) 
+    {   
+        return callback(page);
+    });  
   };
 
   /*
-  * Put the job specification on beanstalk
-  * feed_obj : obj : the facebbok status update
-  * user_id : string || int : facebook user id
+  * Get all links on a given page
   */
-  this.addLinkToQueue = function(feed_obj, user_id, is_backfill){
-    var jobber_to_use = is_backfill ? self.jobber_high : self.jobber;
-    if(feed_obj.hasOwnProperty('application')){
-      delete feed_obj.application;  
+  this.getPageLinks = function(page, linkExtractedCallback){ 
+    for (var i in page){ 
+      if (page[i] && page[i].entities && page[i].entities.urls && page[i].entities.urls.length){ 
+          var url = page[i].entities.urls[0].expanded_url ? page[i].entities.urls[0].expanded_url : page[i].entities.urls[0].url;
+          linkExtractedCallback(url, page[i]);
+      }
     }
+  };
+
+	/*
+	* Create a link out of an embed
+	*/
+	this.createLink = function(embed){
+		var link = embed;
+		return link;
+	};
+
+  /*
+  * Throw a proccessed link back on the queue
+  */
+	this.addLinkToQueue = function(link, post, tumblr_id){
     var job_spec = {
-      "facebook_status_update":feed_obj,
-      "url":feed_obj.source,
-      "provider_type":"facebook",
-      "provider_user_id":user_id
+       "tumblr_post":post,
+       "embed":link,
+       "provider_type":"tumblr",
+       "provider_user_id":tumblr_id
     };
-    util.log(job_spec);
-    jobber_to_use.put(job_spec, function(data){
+
+    self.jobber.put(job_spec, function(err, res){
       return;
     });
+  };  
+
+  /*
+  * Create a new twitter client and pass it to startbackfill pre-func
+  */
+  this.getOAuthClient = function(job_data, deleteJob, callback){
+    var tumblr_cfg = config.tumblr_keys;
+    //var twit_cfg = {};
+    tumblr_cfg.access_token_key = job_data.oauth_token;
+    tumblr_cfg.access_token_secret = job_data.oauth_secret;
+    var tumblr_client = new new OAuth('http://www.tumblr.com/oauth/request_token',
+		                 'http://www.tumblr.com/oauth/access_token', 
+		                 tumblr_cfg.consumer_token,  tumblr_cfg.consumer_secret, 
+		                 "1.0A", null, "HMAC-SHA1");
+		
+    return callback(null, twitter_client);
   };
 
   /*
-  * Grab user set from redis and get each users since last seen feed.
+  * Get Twitter Client and pass it to startBackfill
   */
-  this.getAllUserFeeds = function(){
-    fb_dao.getUserSet(function(err, members){
-      if (err || !members.length){
-        return util.log({status:"error retrieving fb users or no users", type:"fb_feed"});
-      }
-      
-      util.log({status:'initializing facebook polling from redis'});
+  this.addUser = function(job_data, deleteJob){
+    util.log({"status":'commencing new job', "type":'backfill', "twitter_id":job_data.twitter_id});
+    self.getTwitterClient(job_data, deleteJob, function(err, twit_cl){
+      self.startBackfill(twit_cl, job_data.twitter_id, deleteJob);
+    });    
+  };
 
-      for (var i in members){
-        if (members.hasOwnProperty(i)){
-          self.getFeed(members[i], false, function(err, res){
-            if (err){
-              return util.log(err);
-            }
-          });  
-        }
-      }
-      setTimeout(function(){
-        process.exit();
-      }, members.length*10*1000);
-    });  
+  /*
+  * Switch for the job action and execute the corresponding function
+  */
+  this.proccessNewJob = function(job, deleteJob){ 
+  deleteJob();  
+  switch(job.action){ 
+      case 'add_user':
+      self.addUser(job, deleteJob);
+      break;
+
+      default:
+      util.log({"status":"NO JOB ACTION", "job":job});
+      break;
+    }
   };
   
-  /*
-  * Initialize job-queue listening
-  */
   this.init = function(){
-    self.jobber = JobManager.create(config.facebook.tube_add, config.link_tube, self.initFbUser);
-    self.jobber.poolect(20, function(err, res){
-      self.jobber.reserve(function(err, res){
+    self.jobber = JobManager.create(config.twitter_backfill_tube, config.link_tube_high, self.proccessNewJob); 
+     console.log(config.twitter_backfill_tube, config.twitter_link_tube);
+     self.jobber.poolect(20, function(err, res){
+     setInterval(function(){console.log('POOL SIZE:', self.jobber.respool.pool.length);}, 5000); 
+     self.jobber.reserve(function(err, res){
+       return;
       });
     });  
-    self.jobber_high = JobManager.create(config.facebook.tube_add, config.link_tube_high, self.initFbUser);
-    self.jobber_high.poolect(20, function(err,res){});
-  };
+  };  
 }
 
-/*
-* Initialization sequence
---------------------------
-* 1. Grab all feeds
-* 2. Attach listener to job queue
-* 3. setInterval (polling the fb api)
-*/
+var b = new BackfillManager();
+b.init();
 
-var f = new TumblrManager();
-f.init();
 
-f.getAllUserFeeds();
-
-/*
-setInterval(function()
-{
-  f.getAllUserFeeds();
-}, 10000);
-
-setInterval(function()
-{
-  console.log(process.memoryUsage());
-},  5000);
-*/
 
