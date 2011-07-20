@@ -1,11 +1,12 @@
 var config = require('../common/config.js'),
-page_start = 12,
-util = require('../common/util.js'),
-tumblr_utils = require('./lib/tumblr_utils.js'),
-OAuth = require('./lib/oauth').OAuth,
-JobManager = require('../common/beanstalk/jobs.js'),
-async = require('async').
-sys = require('sys');
+	util = require('../common/util.js'),
+	tumblr_utils = require('./lib/tumblr_utils.js'),
+	OAuth = require('./lib/oauth').OAuth,
+	JobManager = require('../common/beanstalk/jobs.js'),
+	async = require('async'),
+	tumblr_dao = require('./lib/tumblr_dao.js'),
+	sys = require('sys'),
+	page_start = 12;
 
 function BackfillManager(){
   
@@ -16,12 +17,27 @@ function BackfillManager(){
   */
   this.addUser = function(job_data, deleteJob){
     util.log({"status":'commencing new job', "type":'backfill', "tumblr_id":job_data.tumblr_id});
-    self.getOAuthClient(job_data, deleteJob, function(err, tumblr_client){
-			var access_tokens = {
-				key: job_data.oauth_token,
-				secret: job_data.oauth_secret
-			};
-      self.startBackfill(tumblr_client, access_tokens, job_data.tumblr_id, deleteJob);
+		tumblr_dao.userIsInSet(job_data.tumblr_id, function(is_in_set){
+      if (is_in_set){
+        util.log({"status":"user already in set, deleting job"});
+        return;
+      } else {
+        tumblr_dao.setUserInfo(job_data.tumblr_id, {"tumblr_id":job_data.tumblr_id, 
+					"access_token":job_data.oauth_token, "token_secret": job_data.oauth_secret, "last_seen":0}, function(err, res){
+	          if (err && !res){
+	            util.log({"error":"user info not set"});
+	            return;
+	          } else {
+	            self.getOAuthClient(job_data, deleteJob, function(err, tumblr_client){
+								var access_tokens = {
+									key: job_data.oauth_token,
+									secret: job_data.oauth_secret
+								};
+					      self.startBackfill(tumblr_client, access_tokens, job_data.tumblr_id, deleteJob);
+					    });
+	          }
+        });  
+      }
     });    
   };
 
@@ -57,7 +73,7 @@ function BackfillManager(){
           tumblr_client = null;
         }
 
-        self.getPageLinks(page, function(link, post){
+        self.getPageLinks(page.reverse(), function(link, post){
           return self.addLinkToQueue(link, post, tumblr_user_id);
         });
       });
@@ -121,7 +137,7 @@ function BackfillManager(){
        "provider_type":"tumblr",
        "provider_user_id":tumblr_id
     };
-		console.log("JOB.link: ", job_spec.link);
+		console.log("JOB.link: ", job_spec.link,", Date: "+post.date);
 		/*
     self.jobber.put(job_spec, function(err, res){
       return;
