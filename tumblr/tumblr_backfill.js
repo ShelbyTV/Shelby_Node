@@ -4,7 +4,8 @@ util = require('../common/util.js'),
 tumblr_utils = require('./lib/tumblr_utils.js'),
 OAuth = require('./lib/oauth').OAuth,
 JobManager = require('../common/beanstalk/jobs.js'),
-async = require('async');
+async = require('async').
+sys = require('sys');
 
 function BackfillManager(){
   
@@ -14,7 +15,7 @@ function BackfillManager(){
   * Get Tumblr Client and pass it to startBackfill
   */
   this.addUser = function(job_data, deleteJob){
-    util.log({"status":'commencing new job', "type":'backfill', "twitter_id":job_data.twitter_id});
+    util.log({"status":'commencing new job', "type":'backfill', "tumblr_id":job_data.tumblr_id});
     self.getOAuthClient(job_data, deleteJob, function(err, tumblr_client){
 			var access_tokens = {
 				key: job_data.oauth_token,
@@ -74,7 +75,7 @@ function BackfillManager(){
 		  if(error) {console.log("ERROR" + require('sys').inspect(error));}
 		  else {
 		    var page = JSON.parse(data).response.posts;
-				//console.log("POSTS: " + page[0].id + " - " + page[19].id);
+				console.log("Page: ", page_num);
 				return callback(page);
 		  }
 		});
@@ -120,17 +121,20 @@ function BackfillManager(){
        "provider_type":"tumblr",
        "provider_user_id":tumblr_id
     };
-
+		console.log("JOB.link: ", job_spec.link);
+		/*
     self.jobber.put(job_spec, function(err, res){
       return;
     });
+		*/
   };  
 
   /*
   * Switch for the job action and execute the corresponding function
   */
   this.proccessNewJob = function(job, deleteJob){ 
-  deleteJob();  
+  deleteJob();
+  console.log(job);
   switch(job.action){ 
       case 'add_user':
       self.addUser(job, deleteJob);
@@ -143,7 +147,7 @@ function BackfillManager(){
   };
   
   this.init = function(){
-    self.jobber = JobManager.create(config.twitter_backfill_tube, config.link_tube_high, self.proccessNewJob); 
+    self.jobber = JobManager.create(config.tumblr_backfill_tube, config.link_tube_high, self.proccessNewJob); 
      console.log(config.tumblr_backfill_tube, config.tumblr_link_tube);
      self.jobber.poolect(20, function(err, res){
      setInterval(function(){console.log('POOL SIZE:', self.jobber.respool.pool.length);}, 5000); 
