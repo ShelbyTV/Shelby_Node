@@ -4,7 +4,7 @@ var config = require('../common/config.js'),
 	OAuth = require('./lib/oauth').OAuth,
 	JobManager = require('../common/beanstalk/jobs.js'),
 	async = require('async'),
-	tumblr_dao = require('./lib/tumblr_dao.js'),
+	//tumblr_dao = require('./lib/tumblr_dao.js'),
 	sys = require('sys'),
 	page_start = 12;
 
@@ -18,103 +18,149 @@ function TumblrManager(){
   */
   this.initTumblrUser = function(job, deleteJobAndListen){
     console.log('JOB:', job);
-    tumblr_dao.userIsInSet(job.tumblr_id, function(is_in_set){
+		deleteJobAndListen();
+		info = {"tumblr_id":job.tumblr_id, "access_token":"ZmYflNcu4AJz5xyLE2IA5rrdj0M1QwkxQ7CJChAr3xqt2BxvOw", "access_token_secret":"Wgvz8WaBkXG08fPbvMPR2QjfMEaiMuvkBL77U8JRQBaSqqlIWg", "last_seen":0};
+		return self.getDashboard(info, job.tumblr_id, true);
+		
+    /* NOT USING REDIS YET
+		tumblr_dao.userIsInSet(job.tumblr_id, function(is_in_set){
       if (is_in_set){
         util.log({"status":"user already in set, deleting job"});
         return deleteJobAndListen();
-      }else{
-        tumblr_dao.setUserInfo(job.tumblr_id, {"tumblr_id":job.tumblr_id, "access_token":job.oauth_token, "token_secret":job.oauth_secret,"last_seen":0}, function(err, res){
-          if (err && !res){
-            util.log({"error":"user info not set"});
-            return deleteJobAndListen();
-          }else{
-            deleteJobAndListen();
-            return self.getFeed(job, job.tumblr_id, true);  
+      } else {
+				var info = {"tumblr_id":job.tumblr_id, "access_token":job.oauth_token, "access_token_secret":job.oauth_secret,"last_seen":0};
+				tumblr_dao.setUserInfo(job.tumblr_id, info, function(err, res){
+					if (err && !res){
+						util.log({"error":"user info not set"});
+						return deleteJobAndListen();
+					} else {
+						deleteJobAndListen();
+						return self.getDashboard(info, job.tumblr_id, true);  
           }
         });
       }
     });
-  };
+	*/
+	};
 
   /*
-  * Create a new tumblr client and pass it to getFeed func
+  * Make API call to tumblr to get a given users dashboard
+  * user_id : string : user tumblr id / primary blog name
   */
-  this.getOAuthClient = function(job_data, callback){
-    var tumblr_cfg = config.tumblr_keys;
-    //var tumblr_cfg = {};
-    //tumblr_cfg.access_token_key = job_data.oauth_token;
-    //tumblr_cfg.access_token_secret = job_data.oauth_secret;
-    var tumblr_client = new OAuth('http://www.tumblr.com/oauth/request_token',
-		                 'http://www.tumblr.com/oauth/access_token', 
-		                 tumblr_cfg.consumer_key,  tumblr_cfg.consumer_secret, 
-		                 "1.0A", null, "HMAC-SHA1");
-		
-    return callback(null, tumblr_client);
-  };
-
-
-
-  /*
-  * Make API call to tumblr to get a given users feed
-  * user_id : int || string : user tumblr id
-  * deleteJobAndListen : function : delete current job from bs
-  */
-  this.getFeed = function(job, user_id, is_backfill){ 
+  this.getDashboard = function(info, user_id, is_backfill){ 
+		self.getOAuthClient(function(err, tumblr_client){
+      self.startPolling(tumblr_client, info, user_id, is_backfill);
+    });
+		/* NOT USING REDIS YET
     tumblr_dao.getUserInfo(user_id, function(err, info){
       if (err && !(info && info.length==3)){
         return util.log({"status":"ERR:info bad or not found"});
       }
 
-      self.getOAuthClient(job_data, function(err, tumblr_client){
-				var access_tokens = {
-					key: job_data.oauth_token,
-					secret: job_data.oauth_secret
-				};
-	      self.startPolling(tumblr_client, access_tokens, job_data.tumblr_id, deleteJob, is_backfill);
+      self.getOAuthClient(access_token, function(err, tumblr_client){
+	      self.startPolling(tumblr_client, info, tumblr_id, is_backfill);
       });          
     });
+		*/
   };
 
+  /*
+  * Create a new tumblr client and pass it to getDashboard func
+  */
+  this.getOAuthClient = function(callback){
+    var tumblr_cfg = config.tumblr_keys;
+    var tumblr_client = new OAuth('http://www.tumblr.com/oauth/request_token',
+		                 'http://www.tumblr.com/oauth/access_token', 
+		                 tumblr_cfg.consumer_key,  tumblr_cfg.consumer_secret, 
+		                 "1.0A", null, "HMAC-SHA1");
+		
+    return callback(null,tumblr_client);
+  };
 
 	/*
   * Begin the polling proccess.
   */
-	this.startPolling = function(tumblr_client, access_tokens, tumblr_user_id, deleteJob, is_backfill){  
-		var page_counter = 0;
-		for(var p=page_start; p>0; p-=1){ 
-			if (is_backfill) { util.log({status:'retrieving pages', type:'backfill', tumblr_id:tumblr_user_id}); }
-			else { 
-				util.log({status:'retrieving pages', type:'polling', tumblr_id:tumblr_user_id});  
-			}
-      self.getPage(tumblr_client, access_tokens, p, function(page){ 
+	this.startPolling = function(tumblr_client, info, tumblr_user_id, is_backfill){  
+		var access_token = {
+			token: info.access_token,
+			token_secret: info.access_token_secret
+		};
+		
+		if (is_backfill){
+			util.log({status:'retrieving pages', type:'backfill', tumblr_id:tumblr_user_id});
+			self.doBackfill(tumblr_client, access_token, tumblr_user_id);
+		} else {
+			util.log({status:'retrieving pages', type:'polling', tumblr_id:tumblr_user_id});  
+			self.doPolling(tumblr_client, access_token, 0, info.last_seen, []);
+		}
+  };
+
+  /*
+  * Begin the backfill proccess. Named start due to asyncness
+  */
+  this.doBackfill = function(tumblr_client, access_token, tumblr_user_id){  
+    var page_counter = 0;
+		var page_start = 12;
+    for(var p=page_start; p>0; p-=1){ 
+      
+      self.getPage(tumblr_client, access_token, p, function(page){ 
         page_counter+=1;
         
         if (page_counter==page_start) { 
-					tumblr_client = null;
-					/* set last seen post to redis */
-				  tumblr_dao.setUserProperty(tumblr_user_id, 'last_seen', page[0].id, function(err, res){
-						if (err && !res){
-							return util.log({"error":"last seen not set!"}); 
-						}
-					});
-				}
-				
-				self.getPageLinks(page.reverse(), function(link, post){
-					return self.addLinkToQueue(link, post, tumblr_user_id);
-				});
-			});
-    }
+          tumblr_client = null;
+        }
+
+        self.getPageLinks(page.reverse(), function(link, post){
+          return self.addLinkToQueue(link, post, tumblr_user_id, true);
+        });
+      });
+    }  
   };
 
+	this.doPolling = function(tumblr_client, access_token, offset, since_id, urls){
+		//offset = offset; // max 250
+		var req_url = 'http://api.tumblr.com/v2/user/dashboard?type=video&offset=' + offset + '&since_id='+ since_id;
+		tumblr_client.get(req_url, access_token.token, access_token.token_secret, function(error, data) {
+			if(error) {sys.inspect(error);}
+		  else {
+		    var page = JSON.parse(data);
+				var posts = page.response.posts;
+				
+				if (posts.length === 20) {
+					console.log("parsed 20 posts");
+					self.getPageLinks(posts, function(link, post){
+						urls.push({'url': link, 'post': post.date});
+						console.log(urls.length);
+	        });
+					self.doPolling(tumblr_client, access_token, offset+20, since_id, urls);
+				} else {
+					tumblr_client = null;
+					/* set last seen post in redis */
+				  //tumblr_dao.setUserProperty(tumblr_user_id, 'last_seen', page[0].id, function(err, res){
+					//	if (err && !res){
+					//		return util.log({"error":"last seen not set!"}); 
+					//	}
+					//});
+					console.log("parsed " + posts.length + " posts");
+					self.getPageLinks(posts, function(link, post){
+						urls.push({'url': link, 'post': post.date});
+						console.log(urls.length);
+	        });
+					//THIS IS WHERE URLS SHOULD BE POPPED AND ADDED TO Q 
+					return console.log(urls);
+				}
+		  }
+		});
+	};
 
   /*
   * Get the page_num page for a given user (oauth in the tumblr_client)
   */
-  this.getPage = function(tumblr_client, access_tokens, page_num, callback){
+  this.getPage = function(tumblr_client, access_token, page_num, callback){
 		var offset = page_num * 10;
 		var req_url = 'http://api.tumblr.com/v2/user/dashboard?type=video&offset='+ offset;
     
-		tumblr_client.get(req_url, access_tokens.key, access_tokens.secret, function(error, data) {
+		tumblr_client.get(req_url, access_token.token, access_token.token_secret, function(error, data) {
 		  if(error) {console.log("ERROR" + require('sys').inspect(error));}
 		  else {
 		    var page = JSON.parse(data).response.posts;
@@ -128,6 +174,7 @@ function TumblrManager(){
   * Get all links on a given page
   */
   this.getPageLinks = function(page, linkExtractedCallback){ 
+		//console.log(page);
     for (var i in page){ 
       var exp = /\(?\bhttp:\/\/[-A-Za-z0-9+&@#\/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#\/%=~_()|]/g;
 			/* Making sure a post has a player attribute */
@@ -155,45 +202,25 @@ function TumblrManager(){
   };
 
   /*
-  * Validate presence of feed data - delete job - pass each element to addLinkToQueue
-  * feed : obj : all metadata for tumblr update
-  * user_id : int || string : tumblr user id
-  * deleteJobAndListen : function : delete current job from bs
-  */
-  this.parseFeed = function(feed, user_id, is_backfill){ 
-    var feed_length = feed.data.length;
-
-    if (feed && feed.data && feed.data.length){
-      util.log({"status":"feed retrieved now parsing", "type":"fb_feed"});     
-      for (var i in feed.data){
-        if (feed.data[i] && feed.data[i].type && feed.data[i].type=='video' && feed.data[i].source){
-  	      self.addLinkToQueue(feed.data[i], user_id, is_backfill);
-        }	
-      }	
-    }
-  };
-
-  /*
   * Put the job specification on beanstalk
   * feed_obj : obj : the facebbok status update
   * user_id : string || int : tumblr user id
   */
-  this.addLinkToQueue = function(feed_obj, user_id, is_backfill){
-    var jobber_to_use = is_backfill ? self.jobber_high : self.jobber;
-    if(feed_obj.hasOwnProperty('application')){
-      delete feed_obj.application;  
-    }
-    var job_spec = {
-      "tumblr_status_update":feed_obj,
-      "url":feed_obj.source,
-      "provider_type":"tumblr",
-      "provider_user_id":user_id
-    };
-    util.log(job_spec);
-    jobber_to_use.put(job_spec, function(data){
-      return;
-    });
-  };
+	this.addLinkToQueue = function(link, post, user_id, is_backfill){
+		var jobber_to_use = is_backfill ? self.jobber_high : self.jobber;
+		
+		var job_spec = {
+			//"tumblr_status_update":post,
+			"url":link,
+			"provider_type":"tumblr",
+			"provider_user_id":user_id
+		};
+		util.log(job_spec);
+		/* NOT PUTTING ON Q RIGHT NOW */
+		//jobber_to_use.put(job_spec, function(data){
+		return;
+		//});
+	};
 
   /*
   * Grab user set from redis and get each users since last seen feed.
@@ -208,7 +235,7 @@ function TumblrManager(){
 
       for (var i in members){
         if (members.hasOwnProperty(i)){
-          self.getFeed(members[i], false, function(err, res){
+          self.getDashboard(members[i], false, function(err, res){
             if (err){
               return util.log(err);
             }
@@ -225,12 +252,12 @@ function TumblrManager(){
   * Initialize job-queue listening
   */
   this.init = function(){
-    self.jobber = JobManager.create(config.tumblr.tube_add, config.link_tube, self.initFbUser);
+    self.jobber = JobManager.create(config.tumblr_backfill_tube, config.link_tube_high, self.initTumblrUser);
     self.jobber.poolect(20, function(err, res){
       self.jobber.reserve(function(err, res){
       });
     });  
-    self.jobber_high = JobManager.create(config.tumblr.tube_add, config.link_tube_high, self.initFbUser);
+    self.jobber_high = JobManager.create(config.tumblr_backfill_tube, config.link_tube_high, self.initTumblrUser);
     self.jobber_high.poolect(20, function(err,res){});
   };
 }
@@ -243,7 +270,10 @@ function TumblrManager(){
 * 3. setInterval (polling the fb api)
 */
 
-var f = new tumblrManager();
-f.init();
+var f = new TumblrManager();
 
-f.getAllUserFeeds();
+var info = {"tumblr_id":"henry_poll", "access_token":"ZmYflNcu4AJz5xyLE2IA5rrdj0M1QwkxQ7CJChAr3xqt2BxvOw", "access_token_secret":"Wgvz8WaBkXG08fPbvMPR2QjfMEaiMuvkBL77U8JRQBaSqqlIWg", "last_seen":7773152764};
+
+f.getDashboard(info, 'henry_poll', false);
+//f.init();
+//f.getAllUserFeeds();
