@@ -3,7 +3,7 @@ var redis = require('redis').createClient(config.redis_config.port, config.redis
 
 function getUserInfoKey(tumblr_id)
 {
-  return 'tumblrusr:'+tumblr_id+':info';
+  return 'tumblr_users:'+tumblr_id+':info';
 }
 
 function getUserSetKey()
