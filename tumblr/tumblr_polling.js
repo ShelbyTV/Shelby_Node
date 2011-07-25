@@ -3,7 +3,6 @@ var config = require('../common/config.js'),
 	tumblr_utils = require('./lib/tumblr_utils.js'),
 	OAuth = require('oauth').OAuth,
 	JobManager = require('../common/beanstalk/jobs.js'),
-	async = require('async'),
 	tumblr_dao = require('./lib/tumblr_dao.js'),
 	sys = require('sys'),
 	page_start = 12;
