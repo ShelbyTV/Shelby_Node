@@ -1,7 +1,7 @@
 var config = require('../common/config.js'),
 	util = require('../common/util.js'),
 	tumblr_utils = require('./lib/tumblr_utils.js'),
-	OAuth = require('./lib/oauth').OAuth,
+	OAuth = require('oauth').OAuth,
 	JobManager = require('../common/beanstalk/jobs.js'),
 	async = require('async'),
 	tumblr_dao = require('./lib/tumblr_dao.js'),
@@ -10,21 +10,21 @@ var config = require('../common/config.js'),
 
 function TumblrManager(){
 	
-  var self = this;
-  /*
-  * Initialize tumblr metadata in redis (if user does not exist)
-  * job : obj : beanstalk job
-  * deleteJobAndListen : function : delete current job from bs
-  */
-  this.initTumblrUser = function(job, deleteJobAndListen){
-    console.log('JOB:', job);
+	var self = this;
+	/*
+	* Initialize tumblr metadata in redis (if user does not exist)
+	* job : obj : beanstalk job
+	* deleteJobAndListen : function : delete current job from bs
+	*/
+	this.initTumblrUser = function(job, deleteJobAndListen){
+		console.log('JOB:', job);
 		deleteJobAndListen();
 		
 		tumblr_dao.userIsInSet(job.tumblr_id, function(is_in_set){
-      if (is_in_set){
-        util.log({"status":"user already in set, deleting job"});
-        return deleteJobAndListen();
-      } else {
+			if (is_in_set){
+				util.log({"status":"user already in set, deleting job"});
+				return deleteJobAndListen();
+			} else {
 				var info = {"tumblr_id":job.tumblr_id, "access_token":job.oauth_token, "access_token_secret":job.oauth_secret,"last_seen":0};
 				tumblr_dao.setUserInfo(job.tumblr_id, info, function(err, res){
 					if (err && !res){
@@ -32,176 +32,195 @@ function TumblrManager(){
 						return deleteJobAndListen();
 					} else {
 						deleteJobAndListen();
-						return self.getDashboard(info, job.tumblr_id, true);  
-          }
-        });
-      }
-    });
+						return self.getDashboard(info, true);	 
+					}
+				});
+			}
+		});
 	};
 
-  /*
-  * Make API call to tumblr to get a given users dashboard
-  * user_id : string : user tumblr id / primary blog name
-  */
-  this.getDashboard = function(info, tumblr_user_id, is_backfill){
-    self.getOAuthClient(function(err, tumblr_client){
-     self.startPolling(tumblr_client, info, tumblr_user_id, is_backfill);
-    });          
-  };
-
-  /*
-  * Create a new tumblr client and pass it to getDashboard func
-  */
-  this.getOAuthClient = function(callback){
-    var tumblr_cfg = config.tumblr_keys;
-    var tumblr_client = new OAuth('http://www.tumblr.com/oauth/request_token',
-		                 'http://www.tumblr.com/oauth/access_token', 
-		                 tumblr_cfg.consumer_key,  tumblr_cfg.consumer_secret, 
-		                 "1.0A", null, "HMAC-SHA1");
-		
-    return callback(null,tumblr_client);
-  };
+	/*
+	* Make API call to tumblr to get a given users dashboard
+	* user_id : string : user tumblr id / primary blog name
+	*/
+	this.getDashboard = function(info, is_backfill){
+		self.getOAuthClient(function(err, tumblr_client){
+		 self.startPolling(tumblr_client, info, is_backfill);
+		});					 
+	};
 
 	/*
-  * Begin the polling proccess.
-  */
-	this.startPolling = function(tumblr_client, info, tumblr_user_id, is_backfill){  
-		var access_token = {
-			token: info.access_token,
-			token_secret: info.access_token_secret
-		};
+	* Create a new tumblr client and pass it to getDashboard func
+	*/
+	this.getOAuthClient = function(callback){
+		var tumblr_cfg = config.tumblr_keys;
+		var tumblr_client = new OAuth('http://www.tumblr.com/oauth/request_token',
+										 'http://www.tumblr.com/oauth/access_token', 
+										 tumblr_cfg.consumer_key,	 tumblr_cfg.consumer_secret, 
+										 "1.0A", null, "HMAC-SHA1");
+		
+		return callback(null,tumblr_client);
+	};
+
+	/*
+	* Begin the polling proccess.
+	*/
+	this.startPolling = function(tumblr_client, info, is_backfill){	 
+		var access_token = { token: info.access_token, token_secret: info.access_token_secret };
 		if (is_backfill){
-			util.log({status:'retrieving pages', type:'backfill', tumblr_id:tumblr_user_id});
-			self.doBackfill(tumblr_client, access_token, tumblr_user_id);
+			util.log({status:'retrieving pages', type:'backfill', tumblr_id:info.tumblr_id});
+			self.doBackfill(tumblr_client, access_token, info.tumblr_id, 0, []);
 		} else {
-			console.log("ID: " + sys.inspect(tumblr_user_id));
-			util.log({status:'retrieving pages', type:'polling', tumblr_id:tumblr_user_id});  
-			self.doPolling(tumblr_client, access_token, tumblr_user_id, 0, info.last_seen, []);
+			util.log({status:'retrieving pages', type:'polling', tumblr_id:info.tumblr_id});
+			/* Start with an offset of 1 to ignore the first post which IS the last seen post from last polling */
+			self.doPolling(tumblr_client, access_token, info.tumblr_id, 1, info.last_seen, []);
 		}
-  };
+	};
 
-  /*
-  * Begin the backfill proccess. Named start due to asyncness
-  */
-  this.doBackfill = function(tumblr_client, access_token, tumblr_user_id){  
-    var page_counter = 0;
-		var page_start = 12;
-    for(var p=page_start; p>0; p-=1){ 
-      
-      self.getPage(tumblr_client, access_token, p, function(page){ 
-        page_counter+=1;
-        
-        if (page_counter==page_start) { 
-          tumblr_client = null;
-        }
+	/*
+	* Begin the backfill proccess after initial auth
+	*/
+	this.doBackfill = function(tumblr_client, access_token, tumblr_user_id, page_num, urls){
+		var offset = page_num * 20;
+		var req_url = 'http://api.tumblr.com/v2/user/dashboard?type=video&offset=' + offset;
+		tumblr_client.get(req_url, access_token.token, access_token.token_secret, function(error, data) {
+			if(error) {sys.inspect(error);}
+			else {
+				var page = JSON.parse(data);
+				var posts = page.response.posts;
+				
+				if (page_num < page_start) {
+					if (page_num === 0){
+						/* set most recent post to redis */
+						tumblr_dao.setUserProperty(tumblr_user_id, 'last_seen', posts[0].id, function(err, res){
+							if (err && !res){
+								return util.log({"error":"last seen not set!"}); 
+							}
+						});
+					}
+					
+					self.getPageLinks(posts, function(link, post){
+						urls.push({'url': link, 'post': post});
+					});
+	
+					/* increment page counter and get next page */
+					page_num += 1;
+					self.doBackfill(tumblr_client, access_token, tumblr_user_id, page_num, urls);
+				} else if (page_num === page_start){
+					tumblr_client = null;
+					
+					self.getPageLinks(posts, function(link, post){
+						urls.push({'url': link, 'post': post});
+					});
+					
+					/* urls are popped out of the urls array and send to link Q */
+					while (urls.length >1){
+						var vid = urls.pop();
+						self.addLinkToQueue(vid.url, vid.post, tumblr_user_id, true);
+					}
+					return;
+				}
+			}
+		});
+	};
 
-        self.getPageLinks(page.reverse(), function(link, post){
-          return self.addLinkToQueue(link, post, tumblr_user_id, true);
-        });
-      });
-    }  
-  };
-
+	/* 
+	* Poll a users dashboard since the last time we checked
+	*/
 	this.doPolling = function(tumblr_client, access_token, tumblr_user_id, offset, since_id, urls){
-		//offset = offset; // max 250
 		var req_url = 'http://api.tumblr.com/v2/user/dashboard?type=video&offset=' + offset + '&since_id='+ since_id;
 		tumblr_client.get(req_url, access_token.token, access_token.token_secret, function(error, data) {
 			if(error) {sys.inspect(error);}
-		  else {
-		    var page = JSON.parse(data);
+			else {
+				var page = JSON.parse(data);
 				var posts = page.response.posts;
-				var temp_url_arry = [];
 				
-				//urls = urls.reverse();
-					
 				if (posts.length === 20) {
-					console.log("parsed 20 posts");
 					
 					self.getPageLinks(posts, function(link, post){
-						urls.unshift({'url': link, 'post': post.date});
-	        });
+						urls.unshift({'url': link, 'post': post.id});
+					});
+					console.log("Reurned " + posts.length + " posts");
 					self.doPolling(tumblr_client, access_token, tumblr_user_id, offset+20, since_id, urls);
 				} else {
+					/* destroy tumblr client */
 					tumblr_client = null;
+
 					/* set last seen post in redis */
-				  //tumblr_dao.setUserProperty(tumblr_user_id, 'last_seen', page[0].id, function(err, res){
-					//	if (err && !res){
-					//		return util.log({"error":"last seen not set!"}); 
-					//	}
-					//});
-					console.log("parsed " + posts.length + " posts");
+					if(posts.length !== 0){
+						tumblr_dao.setUserProperty(tumblr_user_id, 'last_seen', posts[posts.length -1].id, function(err, res){
+							if (err && !res){
+								return util.log({"error":"last seen not set!"}); 
+							}
+						});
+					}
+					
 					self.getPageLinks(posts, function(link, post){
-						urls.unshift({'url': link, 'post': post.date});
-						//console.log(post.date);
-	        });
+						urls.unshift({'url': link, 'post': post});
+					});
+					
+					util.log({tvmblr_id: tumblr_user_id, posts_found: urls.length});
+					
 					/* urls are popped out of the urls array and send to link Q */
-					while (urls.length >1){
+					while (urls.length > 1){
 						var vid = urls.shift();
 						self.addLinkToQueue(vid.url, vid.post, tumblr_user_id, false);
 					}
 					return;
 				}
-		  }
+			}
 		});
 	};
 
-  /*
-  * Get the page_num page for a given user (oauth in the tumblr_client)
-  */
-  this.getPage = function(tumblr_client, access_token, page_num, callback){
-		var offset = page_num * 10;
-		var req_url = 'http://api.tumblr.com/v2/user/dashboard?type=video&offset='+ offset;
-    
-		tumblr_client.get(req_url, access_token.token, access_token.token_secret, function(error, data) {
-		  if(error) {console.log("ERROR" + require('sys').inspect(error));}
-		  else {
-		    var page = JSON.parse(data).response.posts;
-				console.log("Page: ", page_num);
-				return callback(page);
-		  }
-		});
-  };
 
-  /*
-  * Get all links on a given page
-  */
-  this.getPageLinks = function(page, linkExtractedCallback){ 
-    for (var i in page){ 
-      var exp = /\(?\bhttp:\/\/[-A-Za-z0-9+&@#\/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#\/%=~_()|]/g;
-			/* Making sure a post has a player attribute */
-			if (page[i].player){
-				var post_embed = page[i].player[0].embed_code;
-				if (exp.test(post_embed)){
-					var links = unescape(post_embed).match(exp).uniques();
-					for (var j in links){
-						var video = tumblr_utils.findUrl(links[j]);
-						if (video.url !== null){ linkExtractedCallback(video.url, page[i]); }
+	/*
+	* Get all links on a given page
+	*/
+	this.getPageLinks = function(page, linkExtractedCallback){ 
+		var post_embed = '',
+				links = '',
+				video = {};
+				
+		if (page.length > 0){
+			for (var i=0; i < page.length; i++) {
+				var exp = /\(?\bhttp:\/\/[-A-Za-z0-9+&@#\/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#\/%=~_()|]/g;
+				/* Making sure a post has a player attribute */
+				if (page[i].player){
+					post_embed = page[i].player[0].embed_code;
+					if (exp.test(post_embed)){
+						links = unescape(post_embed).match(exp).uniques();
+						for (var j in links){
+							/* tumblr_utils has list of supported domains */
+							video = tumblr_utils.findUrl(links[j]);
+							if (video.url !== null){ linkExtractedCallback(video.url, page[i]); }
+						}
 					}
-				}
-			/* For some reason a post or two gets returned as a function (??) */
-			} else if (page[i]()[0].player){
-				var post_embed = page[i]()[0].player[0].embed_code;
-				if (exp.test(post_embed)){
-					var links = unescape(post_embed).match(exp).uniques();
-					for (var j in links){
-						var video = tumblr_utils.findUrl(links[j]);
-						if (video.url !== null){ linkExtractedCallback(video.url, page[i]); }
+				/* For some reason a post or two gets returned as a function (not sure why... hmmm. node thing?) */
+				} else if (page[i]()[0].player){
+					post_embed = page[i]()[0].player[0].embed_code;
+					if (exp.test(post_embed)){
+						links = unescape(post_embed).match(exp).uniques();
+						for (var k in links){
+							/* tumblr_utils has list of supported domains */
+							video = tumblr_utils.findUrl(links[k]);
+							if (video.url !== null){ linkExtractedCallback(video.url, page[k]); }
+						}
 					}
 				}
 			}
-    }
-  };
+		}
+	};
 
-  /*
-  * Put the job specification on beanstalk
-  * feed_obj : obj : the facebbok status update
-  * user_id : string || int : tumblr user id
-  */
+	/*
+	* Put the job specification on beanstalk
+	* feed_obj : obj : the facebbok status update
+	* user_id : string || int : tumblr user id
+	*/
 	this.addLinkToQueue = function(link, post, user_id, is_backfill){
 		var jobber_to_use = is_backfill ? self.jobber_high : self.jobber;
 		
 		var job_spec = {
-			"tumblr_status_update":post.date,
+			"tumblr_status_update":post,
 			"url":link,
 			"provider_type":"tumblr",
 			"provider_user_id":user_id
@@ -213,49 +232,49 @@ function TumblrManager(){
 		//});
 	};
 
-  /*
-  * Grab user set from redis and get each users since last seen feed.
-  */
-  this.getAllUserFeeds = function(){
-    tumblr_dao.getUserSet(function(err, members){
-      if (err || !members.length){
-        return util.log({status:"error retrieving fb users or no users", type:"fb_feed"});
-      }
+	/*
+	* Grab user set from redis and get each users since last seen feed.
+	*/
+	this.getAllUserFeeds = function(){
+		tumblr_dao.getUserSet(function(err, members){
+			if (err || !members.length){
+				return util.log({status:"error retrieving tumblr users or no users", type:"tumblr_feed"});
+			}
 
-      util.log({status:'initializing tumblr polling from redis'});
+			util.log({status:'initializing tumblr polling from redis'});
 
-      for (var i in members){
-        if (members.hasOwnProperty(i)){
+			for (var i in members){
+				if (members.hasOwnProperty(i)){
 					tumblr_dao.getUserInfo(members[i], function(err, info){
-			      if (err && !(info && info.length==3)){
-			        return util.log({"status":"ERR:info bad or not found"});
-			      }
-          	self.getDashboard(info, members[i], false, function(err, res){
-            	if (err){
-              	return util.log(err);
-            	}
-          	});
-        	});
+						if (err && !(info && info.length==3)){
+							return util.log({"status":"ERR:info bad or not found"});
+						}
+						self.getDashboard(info, false, function(err, res){
+							if (err){
+								return util.log(err);
+							}
+						});
+					});
 				}
-      }
-      setTimeout(function(){
-        process.exit();
-      }, members.length*10*1000);
-    });  
-  };
+			}
+			setTimeout(function(){
+				process.exit();
+			}, members.length*10*1000);
+		});	 
+	};
 
-  /*
-  * Initialize job-queue listening
-  */
-  this.init = function(){
-    self.jobber = JobManager.create(config.tumblr_backfill_tube, config.link_tube_high, self.initTumblrUser);
-    self.jobber.poolect(20, function(err, res){
-      self.jobber.reserve(function(err, res){
-      });
-    });  
-    self.jobber_high = JobManager.create(config.tumblr_backfill_tube, config.link_tube_high, self.initTumblrUser);
-    self.jobber_high.poolect(20, function(err,res){});
-  };
+	/*
+	* Initialize job-queue listening
+	*/
+	this.init = function(){
+		self.jobber = JobManager.create(config.tumblr_backfill_tube, config.link_tube_high, self.initTumblrUser);
+		self.jobber.poolect(20, function(err, res){
+			self.jobber.reserve(function(err, res){
+			});
+		});	 
+		self.jobber_high = JobManager.create(config.tumblr_backfill_tube, config.link_tube_high, self.initTumblrUser);
+		self.jobber_high.poolect(20, function(err,res){});
+	};
 }
 
 /*
@@ -267,9 +286,6 @@ function TumblrManager(){
 */
 
 var f = new TumblrManager();
-//f.init();
-
-//var info = {"tumblr_id":"henry_poll", "access_token":"ZmYflNcu4AJz5xyLE2IA5rrdj0M1QwkxQ7CJChAr3xqt2BxvOw", "access_token_secret":"Wgvz8WaBkXG08fPbvMPR2QjfMEaiMuvkBL77U8JRQBaSqqlIWg", "last_seen":7773152764};
-//f.getDashboard(info, 'henry_poll', false);
+f.init();
 
 f.getAllUserFeeds();

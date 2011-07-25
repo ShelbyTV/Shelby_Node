@@ -1,12 +1,12 @@
 var config = require('../common/config.js'),
 	util = require('../common/util.js'),
 	tumblr_utils = require('./lib/tumblr_utils.js'),
-	OAuth = require('./lib/oauth').OAuth,
+	OAuth = require('oauth').OAuth,
 	JobManager = require('../common/beanstalk/jobs.js'),
 	async = require('async'),
-	tumblr_dao = require('./lib/tumblr_dao.js'),
+	//tumblr_dao = require('./lib/tumblr_dao.js'),
 	sys = require('sys'),
-	page_start = 12;
+	page_start = 1;
 
 function BackfillManager(){
   
@@ -17,7 +17,14 @@ function BackfillManager(){
   */
   this.addUser = function(job_data, deleteJob){
     util.log({"status":'commencing new job', "type":'backfill', "tumblr_id":job_data.tumblr_id});
-		tumblr_dao.userIsInSet(job_data.tumblr_id, function(is_in_set){
+		self.getOAuthClient(job_data, deleteJob, function(err, tumblr_client){
+			var access_tokens = {
+				key: job_data.oauth_token,
+				secret: job_data.oauth_secret
+			};
+      self.startBackfill(tumblr_client, access_tokens, job_data.tumblr_id, deleteJob);
+    });
+		/*tumblr_dao.userIsInSet(job_data.tumblr_id, function(is_in_set){
       if (is_in_set){
         util.log({"status":"user already in set, deleting job"});
         return;
@@ -38,7 +45,8 @@ function BackfillManager(){
 	          }
         });  
       }
-    });    
+    });
+		*/
   };
 
   /*
@@ -137,7 +145,12 @@ function BackfillManager(){
        "provider_type":"tumblr",
        "provider_user_id":tumblr_id
     };
-		console.log("JOB.link: ", job_spec.link,", Date: "+post.date);
+		if (typeof post === "function"){
+			console.log("JOB.link: ", job_spec.link,", Date: "+post().date);
+		} else {
+			console.log("JOB.link: ", job_spec.link,", Date: "+post.date);
+		}
+		
 		/*
     self.jobber.put(job_spec, function(err, res){
       return;
