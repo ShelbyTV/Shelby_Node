@@ -40,7 +40,7 @@ function TumblrManager(){
 
 	/*
 	* Make API call to tumblr to get a given users dashboard
-	* user_id : string : user tumblr id / primary blog name
+	* info : json obj : user tumblr id / primary blog name, access_token, access_token_secret, last_seen
 	*/
 	this.getDashboard = function(info, is_backfill){
 		self.getOAuthClient(function(err, tumblr_client){
@@ -212,8 +212,10 @@ function TumblrManager(){
 
 	/*
 	* Put the job specification on beanstalk
-	* feed_obj : obj : the facebbok status update
+	* link : string : the video url form post
+	* post : obj : the raw post
 	* user_id : string || int : tumblr user id
+	* is_backfill : bool
 	*/
 	this.addLinkToQueue = function(link, post, user_id, is_backfill){
 		var jobber_to_use = is_backfill ? self.jobber_high : self.jobber;
@@ -281,10 +283,10 @@ function TumblrManager(){
 --------------------------
 * 1. Grab all feeds
 * 2. Attach listener to job queue
-* 3. setInterval (polling the fb api)
+* 3. setInterval (polling the tumblr api)
 */
 
-var f = new TumblrManager();
-f.init();
+var t = new TumblrManager();
+t.init();
 
-f.getAllUserFeeds();
+t.getAllUserFeeds();

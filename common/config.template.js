@@ -32,7 +32,7 @@ exports.tumblr_keys =
   consumer_secret: 'mefqdRTB2eNlTE5EnS3U8Raa5oMKFvo3Llhj2yyTAPGqu2Go90'
 }
 
-exports.tumblr_backfill_tube = 'tumblr_backfill';
+exports.tumblr_backfill_tube = 'tumblr_add_user';
 
 exports.tumblr_link_tube = 'link_processing';
 
