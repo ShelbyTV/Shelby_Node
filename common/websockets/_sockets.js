@@ -18,8 +18,8 @@ WSManager.prototype.removeClient = function(client, callback){
     return;
   }
   delete this.Clients[user_id][client.sessionId];
-  if (this.Clients.hasOwnProperty(user_id) && !Object.keys(Clients[user_id]).length){
-    delete Clients[user_id];
+  if (this.Clients.hasOwnProperty(user_id) && !Object.keys(this.Clients[user_id]).length){
+    delete this.Clients[user_id];
   }
   this.logAllClients();
   return callback();
