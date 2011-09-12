@@ -3,7 +3,7 @@ sys  = require('sys'),
 io   = require('socket.io'),
 http = require('http'),
 util = require('../util.js'),
-rltime = require('./rltime.js'),
+dgram  = require('dgram'),
 JobManager = require('../beanstalk/_jobs.js');
 
 var WSManager = function(){
@@ -23,6 +23,14 @@ WSManager.prototype.removeClient = function(client, callback){
     delete this.Clients[user_id];
   }
   this.logAllClients();
+	var message = new Buffer('web_sockets.connected_now:-1|c');
+	var socket = dgram.createSocket('udp4');
+	socket.send(message, 0, message.length, 8125, "50.56.19.195", function (err, bytes){
+		if (err) { throw err; }
+		socket.close();
+		//console.log("Wrote " + bytes + " bytes to socket.");
+	});
+
   return callback();
 };
 
@@ -33,6 +41,13 @@ WSManager.prototype.addNewClient = function(client, user_id, callback){
   }
   this.Clients[user_id][client.sessionId] = client;
   util.log({"status":'adding client', "user_id":client.user_id});
+	var message = new Buffer('web_sockets.connected_now:1|c');
+	var socket = dgram.createSocket('udp4');
+	socket.send(message, 0, message.length, 8125, "50.56.19.195", function (err, bytes){
+		if (err) { throw err; }
+		socket.close();
+		//console.log("Wrote " + bytes + " bytes to socket.");
+	});
   return callback();
 };
 
