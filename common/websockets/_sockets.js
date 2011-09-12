@@ -1,12 +1,14 @@
 var config = require('../config.js'),
 sys  = require('sys'),
+express = require('express'),
+app = express.createServer(),
 io   = require('socket.io'),
 http = require('http'),
 util = require('../util.js'),
 dgram  = require('dgram'),
 JobManager = require('../beanstalk/_jobs.js');
 
-var WSManager = function(){
+var WSManager = module.exports =  function(){
   this.Clients = {};
 };
   
@@ -58,7 +60,7 @@ WSManager.prototype.pushPayloadToClient = function(payload, user_id, callback){
     util.log({"status":"sending payload to user", "client":user_id});
     for (var i in this.Clients[user_id]){
       if (this.Clients[user_id].hasOwnProperty(i)){
-        this.Clients[user_id][i].send(payload);        
+        this.Clients[user_id][i].emit('payload', payload);        
       }
     }
   } 
@@ -77,18 +79,23 @@ WSManager.prototype.proccessNewJob = function(job, deleteJobAndListen){
   
 WSManager.prototype.init = function(){
   var self = this;  
-  var server = http.createServer(function(req, res) { 
+
+  /*var server = http.createServer(function(req, res) { 
     res.writeHead(200, {'Content-Type': 'text/html'}); 
     res.end(); 
-  });
+  });*/
 
-  server.listen(config.websocket.server_port, config.websocket.server_uri);
+  io = io.listen(app);
+
+  app.listen(config.websocket.server_port, config.websocket.server_uri);
+
+  //server.listen(config.websocket.server_port, config.websocket.server_uri);
   
   console.log('socket webserver listening on '+config.websocket.server_uri+':'+config.websocket.server_port);
 
-  var socket = io.listen(server); 
+  //var socket = io.listen(server); 
 
-  socket.on('connection', function(client){ 
+  io.sockets.on('connection', function(client){ 
     client.on('message', function(message){ 
       console.log(message);
       if (message.action=='init'){
@@ -105,12 +112,13 @@ WSManager.prototype.init = function(){
     });
   });
    
-    this.jobber = JobManager.create(config.websocket.tube, null, function(job, deleteJob){self.proccessNewJob(job, deleteJob);});
+    /*this.jobber = JobManager.create(config.websocket.tube, null, function(job, deleteJob){self.proccessNewJob(job, deleteJob);});
     this.jobber.poolect(20, function(err, res){
       self.jobber.reserve(function(err, res){
         return;
       });
-    });
+    });*/
+
   }; 
 
 WSManager.prototype.logAllClients = function(){ 
@@ -125,9 +133,6 @@ WSManager.prototype.logAllClients = function(){
   ids = null;
 };
 
-var ws = new WSManager();
-ws.init();
-setInterval(function(){
-  console.log('POOLCOUNT:', ws.jobber.respool.pool.length);
-}, 60000);
-setInterval(function(){process.exit},1200000);
+//var ws = new WSManager();
+//ws.init();
+//setInterval(function(){process.exit},1200000);
