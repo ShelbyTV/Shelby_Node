@@ -60,7 +60,7 @@ WSManager.prototype.pushPayloadToClient = function(payload, user_id, callback){
     util.log({"status":"sending payload to user", "client":user_id});
     for (var i in this.Clients[user_id]){
       if (this.Clients[user_id].hasOwnProperty(i)){
-        this.Clients[user_id][i].emit('payload', payload);        
+        this.Clients[user_id][i].json.send('payload', payload);        
       }
     }
   } 
