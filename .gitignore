@@ -2,3 +2,4 @@ common/config.js
 .vagrant
 Vagrantfile
 logs
+node_modules
