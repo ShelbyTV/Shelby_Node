@@ -5,7 +5,7 @@ var config = require('../common/config.js'),
 	JobManager = require('../common/beanstalk/jobs.js'),
 	tumblr_dao = require('./lib/tumblr_dao.js'),
 	sys = require('sys'),
-	page_start = 12;
+	page_start = 10;
 
 function TumblrManager(){
 	
@@ -161,7 +161,7 @@ function TumblrManager(){
 					util.log({tvmblr_id: tumblr_user_id, posts_found: urls.length});
 					
 					/* urls are popped out of the urls array and send to link Q */
-					while (urls.length > 1){
+					while (urls.length > 0){
 						var vid = urls.shift();
 						self.addLinkToQueue(vid.url, vid.post, tumblr_user_id, false);
 					}
@@ -228,9 +228,9 @@ function TumblrManager(){
 		};
 		util.log(job_spec);
 		/* NOT PUTTING ON Q RIGHT NOW */
-		//jobber_to_use.put(job_spec, function(data){
-		return;
-		//});
+		jobber_to_use.put(job_spec, function(data){
+			return;
+		});
 	};
 
 	/*
@@ -268,7 +268,7 @@ function TumblrManager(){
 	* Initialize job-queue listening
 	*/
 	this.init = function(){
-		self.jobber = JobManager.create(config.tumblr_backfill_tube, config.link_tube_high, self.initTumblrUser);
+		self.jobber = JobManager.create(config.tumblr_backfill_tube, config.link_tube, self.initTumblrUser);
 		self.jobber.poolect(20, function(err, res){
 			self.jobber.reserve(function(err, res){
 			});

@@ -1,7 +1,7 @@
 var	VERSION = '0.1.17',
 	http = require('http'),
 	querystring = require('querystring'),
-	oauth = require('oauth'),
+	oauth = require('./node-oauth'),
 	cookie = require('cookies'),
 	streamparser = require('./parser');
 
@@ -40,7 +40,7 @@ function Twitter(options) {
 
 		rest_base: 'https://api.twitter.com/1',
 		search_base: 'http://search.twitter.com',
-		stream_base: 'http://stream.twitter.com/1',
+		stream_base: 'https://stream.twitter.com/1',
 		user_stream_base: 'https://userstream.twitter.com/2',
 		site_stream_base: 'http://sitestream.twitter.com/2b',
 
@@ -211,6 +211,7 @@ Twitter.prototype.stream = function(method, params, callback) {
 	var request = this.oauth.post(url + '?' + querystring.stringify(params),
 		this.options.access_token_key,
 		this.options.access_token_secret);
+        console.log(request);
 	var stream = new streamparser();
 	stream.destroy = function() {
 		// FIXME: should we emit end/close on explicit destroy?
