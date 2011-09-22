@@ -5,6 +5,7 @@ var u = require('util');
 var redis = require('redis').createClient(config.redis_config.port, config.redis_config.server);
 
 var TwitterStream = function(sort_order){
+  this.jobsBuilt = 0;
   this.sortOrder = sort_order;
   this.full_streams = [];
   this.partial_streams = [];
@@ -110,7 +111,8 @@ TwitterStream.prototype.buildJob = function(tweet, url, twitter_id){
      "provider_user_id":twitter_id
   };
   self.jobber.put(job_spec, function(r){
-    console.log({"src":"StreamManager", "status":"built job for "+twitter_id});  
+    self.jobsBuilt+=1;
+    //console.log({"src":"StreamManager", "status":"built job for "+twitter_id});  
   });
 };
 
@@ -131,7 +133,6 @@ TwitterStream.prototype.chunkizeFollowers = function(ids){
    setInterval(function(){
      var stream_ids = id_arrays.shift();
      if (!stream_ids) {return clearInterval(this);}
-     console.log('BUILDING STREAM FOR:', stream_ids);
      self.trigger('stream:followers', stream_ids);
    },100);
  };
@@ -144,6 +145,7 @@ TwitterStream.prototype.chunkizeFollowers = function(ids){
 TwitterStream.prototype.getAllStreamUsers = function(){
   var self = this;
   redis.sort(config.redis_config.stream_key, this.sortOrder, function(err, stream_ids){
+    self.userCount = stream_ids.length;
     if (!err) {return self.trigger('redis:all_users', stream_ids);}
   });
 };
