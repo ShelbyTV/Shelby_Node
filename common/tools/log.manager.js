@@ -4,9 +4,10 @@ function truncateLogs()
 {
   var trunc = spawn('truncate', ['--size', '0', 
   //'/var/log/shelby/backfill.log', 
-  '/var/log/shelby/websocket.log', 
-  '/var/log/shelby/stream.log',
-  '/var/log/shelby/redis.log']);
+  '/var/log/shelby/websocket.log'
+//  '/var/log/shelby/stream.log',
+ // '/var/log/shelby/redis.log'
+]);
 
   trunc = null;  
   
