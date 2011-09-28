@@ -3,7 +3,6 @@ var util = require('../common/util.js');
 var facebookClient = require('facebook-js')(config.facebook.app_id, config.facebook.app_secret);
 var fb_dao = require('./lib/facebook_dao.js');
 var JobManager = require('../common/beanstalk/jobs.js');
-//var profiler = require('v8-profiler');
 
 function FacebookManager(){
   

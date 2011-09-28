@@ -1,7 +1,7 @@
 var config = require('../common/config.js'),
 page_start = 17,
 util = require('../common/util.js'),
-twitter = require('./lib/node-twitter/lib/twitter.js'),
+twitter = require('./lib/node-twitter-2/lib/twitter.js'),
 JobManager = require('../common/beanstalk/jobs.js'),
 async = require('async');
 
@@ -111,7 +111,6 @@ function BackfillManager(){
   
   this.init = function(){
     self.jobber = JobManager.create(config.twitter_backfill_tube, config.link_tube_high, self.proccessNewJob); 
-     console.log(config.twitter_backfill_tube, config.twitter_link_tube);
      self.jobber.poolect(20, function(err, res){
      setInterval(function(){console.log('POOL SIZE:', self.jobber.respool.pool.length)}, 5000); 
      self.jobber.reserve(function(err, res){
