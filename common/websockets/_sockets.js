@@ -24,7 +24,7 @@ WSManager.prototype.removeClient = function(client, callback){
     delete this.Clients[user_id];
   }
   this.logAllClients();
-	var message = new Buffer('web_sockets.connected_now:-1|c');
+	var message = new Buffer('app.users.'+user_id+'.websockets.disconnect:-1|c');
 	var socket = dgram.createSocket('udp4');
 	socket.send(message, 0, message.length, 8125, "50.56.19.195", function (err, bytes){
 		if (err) { throw err; }
@@ -41,7 +41,7 @@ WSManager.prototype.addNewClient = function(client, user_id, callback){
   }
   this.Clients[user_id][client.sessionId] = client;
   //console.log({"status":'adding client', "user_id":client.user_id});
-	var message = new Buffer('web_sockets.connected_now:1|c');
+	var message = new Buffer('app.users.'+user_id+'.websockets.connect:1|c');
 	var socket = dgram.createSocket('udp4');
 	socket.send(message, 0, message.length, 8125, "50.56.19.195", function (err, bytes){
 		if (err) { throw err; }
