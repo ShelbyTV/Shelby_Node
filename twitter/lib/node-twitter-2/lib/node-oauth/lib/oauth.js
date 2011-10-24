@@ -7,7 +7,7 @@ var crypto= require('crypto'),
     OAuthUtils= require('./_utils');
 
 http.Agent.defaultMaxSockets = Infinity;
-//https.Agent.defaultMaxSockets = Infinity;
+https.Agent.defaultMaxSockets = Infinity;
 
 exports.OAuth= function(requestUrl, accessUrl, consumerKey, consumerSecret, version, authorize_callback, signatureMethod, nonceSize, customHeaders) {
   this._isEcho = false;
