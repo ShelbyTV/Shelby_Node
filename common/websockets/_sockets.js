@@ -4,7 +4,6 @@ express = require('express'),
 app = express.createServer(),
 io   = require('socket.io'),
 http = require('http'),
-util = require('../util.js'),
 dgram  = require('dgram'),
 JobManager = require('../beanstalk/_jobs.js');
 
@@ -25,12 +24,11 @@ WSManager.prototype.removeClient = function(client, callback){
     delete this.Clients[user_id];
   }
   this.logAllClients();
-	var message = new Buffer('web_sockets.connected_now:-1|c');
+	var message = new Buffer('app.users.'+user_id+'.websockets.disconnect:-1|c');
 	var socket = dgram.createSocket('udp4');
 	socket.send(message, 0, message.length, 8125, "50.56.19.195", function (err, bytes){
 		if (err) { throw err; }
 		socket.close();
-		//console.log("Wrote " + bytes + " bytes to socket.");
 	});
 
   return callback();
@@ -42,8 +40,8 @@ WSManager.prototype.addNewClient = function(client, user_id, callback){
     this.Clients[user_id] = {};
   }
   this.Clients[user_id][client.sessionId] = client;
-  util.log({"status":'adding client', "user_id":client.user_id});
-	var message = new Buffer('web_sockets.connected_now:1|c');
+  //console.log({"status":'adding client', "user_id":client.user_id});
+	var message = new Buffer('app.users.'+user_id+'.websockets.connect:1|c');
 	var socket = dgram.createSocket('udp4');
 	socket.send(message, 0, message.length, 8125, "50.56.19.195", function (err, bytes){
 		if (err) { throw err; }
@@ -55,12 +53,12 @@ WSManager.prototype.addNewClient = function(client, user_id, callback){
 
 WSManager.prototype.pushPayloadToClient = function(payload, user_id, callback){
   if (!this.Clients.hasOwnProperty(user_id)){
-    util.log({"status":"user "+user_id+" not currently connected"});
+    //console.log({"status":"user "+user_id+" not currently connected"});
   } else { 
-    util.log({"status":"sending payload to user", "client":user_id});
+    //console.log({"status":"sending payload to user", "client":user_id});
     for (var i in this.Clients[user_id]){
       if (this.Clients[user_id].hasOwnProperty(i)){
-        this.Clients[user_id][i].json.send('payload', payload);        
+        this.Clients[user_id][i].json.send(payload);
       }
     }
   } 
@@ -72,13 +70,16 @@ WSManager.prototype.proccessNewJob = function(job, deleteJobAndListen){
   if (job.payload && job.user_id){  
     return this.pushPayloadToClient(job.payload, job.user_id, deleteJobAndListen);
   } else {
-    util.log({"src":"WSManager", "status":"bad/null job data"});
+    //console.log({"src":"WSManager", "status":"bad/null job data"});
     return deleteJobAndListen();
   }
 };
   
 WSManager.prototype.init = function(){
-  var self = this;  
+  var self = this;
+  setInterval(function(){
+    //console.log(self.Clients);
+  },2000);
 
   /*var server = http.createServer(function(req, res) { 
     res.writeHead(200, {'Content-Type': 'text/html'}); 
@@ -91,19 +92,18 @@ WSManager.prototype.init = function(){
 
   //server.listen(config.websocket.server_port, config.websocket.server_uri);
   
-  console.log('socket webserver listening on '+config.websocket.server_uri+':'+config.websocket.server_port);
+  //console.log('socket webserver listening on '+config.websocket.server_uri+':'+config.websocket.server_port);
 
   //var socket = io.listen(server); 
 
   io.sockets.on('connection', function(client){ 
     client.on('message', function(message){ 
-      console.log(message);
       if (message.action=='init'){
         self.addNewClient(client, message.user_id, function(){
           return self.logAllClients();
         });
       }
-    });  
+    });
 
     client.on('disconnect', function(){  
       self.removeClient(client, function(err, res){
@@ -112,12 +112,12 @@ WSManager.prototype.init = function(){
     });
   });
    
-    /*this.jobber = JobManager.create(config.websocket.tube, null, function(job, deleteJob){self.proccessNewJob(job, deleteJob);});
+    this.jobber = JobManager.create(config.websocket.tube, null, function(job, deleteJob){self.proccessNewJob(job, deleteJob);});
     this.jobber.poolect(20, function(err, res){
       self.jobber.reserve(function(err, res){
         return;
       });
-    });*/
+    });
 
   }; 
 
@@ -128,8 +128,8 @@ WSManager.prototype.logAllClients = function(){
       ids[i] = Object.keys(this.Clients[i]).length;
     }
   }  
-  util.log('ALL CLIENTS:');
-  util.log(ids);
+  //console.log('ALL CLIENTS:');
+  //console.log(ids);
   ids = null;
 };
 
