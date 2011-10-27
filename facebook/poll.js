@@ -16,12 +16,15 @@ function FacebookManager(){
   this.initFbUser = function(job, deleteJobAndListen){
     console.log('JOB:', job);
     fb_dao.userIsInSet(job.fb_id, function(is_in_set){
-      is_in_set = false; //this hack keeps our access tokens updated
-      if (is_in_set){
-        util.log({"status":"user already in set, deleting job"});
-        return deleteJobAndListen();
-      }else{
-        fb_dao.setUserInfo(job.fb_id, {"facebook_id":job.fb_id, "access_token":job.fb_access_token, "last_seen":0}, function(err, res){
+        var user_info = {
+          "facebook_id":job.fb_id,
+          "access_token":job.fb_access_token,
+        };
+        if (!is_in_set){
+          user_info.last_seen = 0;
+        }
+        var is_backfill = is_in_set ? false : true;
+        fb_dao.setUserInfo(job.fb_id, user_info, function(err, res){
           if (err && !res){
             util.log({"error":"user info not set"});
             return deleteJobAndListen();
@@ -30,7 +33,6 @@ function FacebookManager(){
             return self.getFeed(job.fb_id, true);  
           }
         });  
-      }
     });
   };
 
@@ -148,7 +150,7 @@ function FacebookManager(){
       }
       setTimeout(function(){
         process.exit();
-      }, members.length*10*1000);
+      }, members.length*1000);
     });  
   };
   
@@ -176,5 +178,4 @@ function FacebookManager(){
 
 var f = new FacebookManager();
 f.init();
-
 f.getAllUserFeeds();
