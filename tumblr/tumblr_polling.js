@@ -16,7 +16,6 @@ function TumblrManager(){
 	* deleteJobAndListen : function : delete current job from bs
 	*/
 	this.initTumblrUser = function(job, deleteJobAndListen){
-		console.log('JOB:', job);
 		deleteJobAndListen();
 		
 		tumblr_dao.userIsInSet(job.tumblr_id, function(is_in_set){
@@ -67,10 +66,10 @@ function TumblrManager(){
 	this.startPolling = function(tumblr_client, info, is_backfill){	 
 		var access_token = { token: info.access_token, token_secret: info.access_token_secret };
 		if (is_backfill){
-			util.log({status:'retrieving pages', type:'backfill', tumblr_id:info.tumblr_id});
+			//util.log({status:'retrieving pages', type:'backfill', tumblr_id:info.tumblr_id});
 			self.doBackfill(tumblr_client, access_token, info.tumblr_id, 0, []);
 		} else {
-			util.log({status:'retrieving pages', type:'polling', tumblr_id:info.tumblr_id});
+			//util.log({status:'retrieving pages', type:'polling', tumblr_id:info.tumblr_id});
 			/* Start with an offset of 1 to ignore the first post which IS the last seen post from last polling */
 			self.doPolling(tumblr_client, access_token, info.tumblr_id, 1, info.last_seen, []);
 		}
@@ -138,9 +137,9 @@ function TumblrManager(){
 					
 					self.getPageLinks(posts, function(link, post){
 						urls.unshift({'url': link, 'post': post.id});
+						self.doPolling(tumblr_client, access_token, tumblr_user_id, offset+20, since_id, urls);
 					});
-					console.log("Reurned " + posts.length + " posts");
-					self.doPolling(tumblr_client, access_token, tumblr_user_id, offset+20, since_id, urls);
+					//self.doPolling(tumblr_client, access_token, tumblr_user_id, offset+20, since_id, urls);
 				} else {
 					/* destroy tumblr client */
 					tumblr_client = null;
@@ -156,15 +155,28 @@ function TumblrManager(){
 					
 					self.getPageLinks(posts, function(link, post){
 						urls.unshift({'url': link, 'post': post});
+						while (urls.length > 0){
+							var vid = urls.shift();
+							if (typeof vid.post !== 'object'){
+							  console.log('BAD POLLING VID:', vid);
+							} else {
+							  console.log('VALID POLLING VID:', vid.url);
+							  self.addLinkToQueue(vid.url, vid.post, tumblr_user_id, false);
+							}
+						}
 					});
 					
-					util.log({tvmblr_id: tumblr_user_id, posts_found: urls.length});
 					
 					/* urls are popped out of the urls array and send to link Q */
-					while (urls.length > 0){
+					/*while (urls.length > 0){
 						var vid = urls.shift();
-						self.addLinkToQueue(vid.url, vid.post, tumblr_user_id, false);
-					}
+                                                if (typeof vid.post !== 'object'){
+                                                  console.log('BAD POLLING VID:', vid);
+						} else {
+                                                  console.log('VALID POLLING VID:', vid.url);
+						  self.addLinkToQueue(vid.url, vid.post, tumblr_user_id, false);
+                                                }
+					}*/
 					return;
 				}
 			}
@@ -184,27 +196,33 @@ function TumblrManager(){
 			for (var i=0; i < page.length; i++) {
 				var exp = /\(?\bhttp:\/\/[-A-Za-z0-9+&@#\/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#\/%=~_()|]/g;
 				/* Making sure a post has a player attribute */
-				if (page[i].player){
+				if (page[i].type === 'video'){
 					post_embed = page[i].player[0].embed_code;
 					if (exp.test(post_embed)){
 						links = unescape(post_embed).match(exp).uniques();
 						for (var j in links){
 							/* tumblr_utils has list of supported domains */
 							video = tumblr_utils.findUrl(links[j]);
-							if (video.url !== null){ linkExtractedCallback(video.url, page[i]); }
+							if (video.url !== null && typeof page[i] === 'object'){ 
+							  //console.log(Object.keys(page[i]).length);
+							  linkExtractedCallback(video.url, page[i]); 
+							}
 						}
 					}
 				/* For some reason a post or two gets returned as a function (not sure why... hmmm. node thing?) */
-				} else if (page[i]()[0].player){
+				} else if (typeof page[i] === 'function' && page[i]()[0].player){
 					post_embed = page[i]()[0].player[0].embed_code;
 					if (exp.test(post_embed)){
 						links = unescape(post_embed).match(exp).uniques();
 						for (var k in links){
 							/* tumblr_utils has list of supported domains */
 							video = tumblr_utils.findUrl(links[k]);
+							console.log('FUNCTION CONDITION', page[k]);
 							if (video.url !== null){ linkExtractedCallback(video.url, page[k]); }
 						}
 					}
+				} else {
+					console.log('NON VIDEO POST', page[i].type);
 				}
 			}
 		}
@@ -226,7 +244,7 @@ function TumblrManager(){
 			"provider_type":"tumblr",
 			"provider_user_id":user_id
 		};
-		util.log(job_spec);
+		//util.log(job_spec);
 		/* NOT PUTTING ON Q RIGHT NOW */
 		jobber_to_use.put(job_spec, function(data){
 			return;
@@ -239,7 +257,8 @@ function TumblrManager(){
 	this.getAllUserFeeds = function(){
 		tumblr_dao.getUserSet(function(err, members){
 			if (err || !members.length){
-				return util.log({status:"error retrieving tumblr users or no users", type:"tumblr_feed"});
+				//return util.log({status:"error retrieving tumblr users or no users", type:"tumblr_feed"});
+				return;
 			}
 
 			util.log({status:'initializing tumblr polling from redis'});

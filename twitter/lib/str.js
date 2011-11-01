@@ -39,17 +39,17 @@ TwitterStream.prototype.initJobQueue = function(){
 TwitterStream.prototype.addNewUser = function(job, deleteJob){
   var self = this;
   console.log('NEW USR:', job);
-  redis.sismember(config.redis_config.stream_key, job.twitter_id, function(err, res){
+  /*redis.sismember(config.redis_config.stream_key, job.twitter_id, function(err, res){
     if (res/1){
       util.log({"status":'user already in stream', "twitter_id":job.twitter_id}); 
       return deleteJob();
-    } else {
+    } else {*/
       util.log({"status":"Adding stream from beanstalk", "type":"stream"});
       redis.sadd(config.redis_config.stream_key, job.twitter_id, function(){
         return deleteJob();
       });
-    }
-  });
+   // }
+  //});
 };
 
 /*
