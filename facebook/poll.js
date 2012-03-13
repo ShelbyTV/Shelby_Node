@@ -177,5 +177,11 @@ function FacebookManager(){
 */
 
 var f = new FacebookManager();
+
 f.init();
-f.getAllUserFeeds();
+
+setTimeout(function(){
+  process.exit();
+}, 30*60*1000);
+
+//f.getAllUserFeeds();
