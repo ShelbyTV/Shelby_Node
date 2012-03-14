@@ -6,6 +6,7 @@ Stream.bind('disonnect', process.exit);
 setInterval(process.exit, 1800000);
 setInterval(function(){
   console.log(Stream.jobsBuilt, 'jobs built');
+  console.log(Stream.jobsBuiltGt, 'jobs built GT');
   console.log(Stream.userCount, 'users');
   console.log(Stream.full_streams.length+Stream.partial_streams.length, 'streams');
   var nowTime = new Date().getTime();
