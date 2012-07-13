@@ -33,9 +33,9 @@ TwitterStream.prototype.initJobQueue = function(cb){
   this.jobber = require('../../common/beanstalk/jobs.js').create(config.twitter_stream_tube_add, config.link_tube, self.addNewUser);
   this.jobber_gt = require('../../common/beanstalk/jobs.js').create(config.twitter_stream_tube_add, 'link_processing_gt', self.addNewUser);
   //but never poolect jobber gt
-  this.jobber.poolect(20, function(){
+  this.jobber.poolect(40, function(){
     console.log('jober poolected');
-    self.jobber_gt.poolect(20, function(){
+    self.jobber_gt.poolect(40, function(){
       console.log('jobber_gt poolected');
       cb();
       self.jobber.reserve(function(){
@@ -125,7 +125,7 @@ TwitterStream.prototype.buildJob = function(tweet, url, twitter_id){
      "provider_type":"twitter",
      "provider_user_id":twitter_id
   };
-  self.jobber.put(job_spec, function(r){
+  self.jobber.put(job_spec, function(){
     self.jobsBuilt+=1;
   });
   /*self.jobber_gt.put(job_spec, function(r){

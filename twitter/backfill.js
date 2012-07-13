@@ -20,9 +20,10 @@ function BackfillManager(){
        "provider_user_id":twitter_id
     };
     console.log(job_spec);
-    self.jobber.put(job_spec, function(err, res){
+    //no longer putting jobs on the nos stack
+    /*self.jobber.put(job_spec, function(err, res){
       return;
-    });
+    });*/
     self.jobber_gt.put(job_spec, function(err, res){
       return;
     });
@@ -114,7 +115,7 @@ function BackfillManager(){
   
   this.init = function(){
     self.jobber = JobManager.create(config.twitter_backfill_tube, config.link_tube_high, self.proccessNewJob); 
-    self.jobber_gt = JobManager.create(config.twitter_stream_tube_add, 'link_processing_gt', self.addNewUser);
+    self.jobber_gt = JobManager.create('default', 'link_processing_gt', function(){/*donothing*/});
      self.jobber.poolect(20, function(err, res){
        self.jobber_gt.poolect(20, function(err, res){
          setInterval(function(){console.log('POOL SIZE:', self.jobber.respool.pool.length)}, 5000); 
@@ -128,6 +129,3 @@ function BackfillManager(){
 
 var b = new BackfillManager();
 b.init();
-
-
-
