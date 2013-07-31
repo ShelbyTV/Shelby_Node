@@ -13,6 +13,7 @@ function BackfillManager(){
   * Throw a proccessed link back on the queue
   */
   this.addLinkToQueue = function(link, tweet, twitter_id){
+    util.log({link_to_queue: link, twitter_id: twitter_id});
     var job_spec = {
        "twitter_status_update":tweet,
        "url":link,
@@ -35,6 +36,7 @@ function BackfillManager(){
   this.getPage = function(twit_client, page_num, callback){
     twit_client.get('/statuses/home_timeline.json', {include_entities:true, count:200, page:page_num}, function(page) 
     {   
+	util.log({tw_get_page: page});
         return callback(page);
     });  
   };
@@ -61,6 +63,7 @@ function BackfillManager(){
       util.log({status:'retrieving pages', type:'backfill', twitter_id:twitter_user_id});
       
       self.getPage(twit_client, p, function(page){ 
+        util.log({page_num: page_counter});
         page_counter+=1;
         
         if (page_counter==17) { 
@@ -68,6 +71,7 @@ function BackfillManager(){
         }
 
         self.getPageLinks(page, function(link, tweet){
+          util.log({link: link});
           return self.addLinkToQueue(link, tweet, twitter_user_id);
         });
       });

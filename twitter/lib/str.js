@@ -125,12 +125,13 @@ TwitterStream.prototype.buildJob = function(tweet, url, twitter_id){
      "provider_type":"twitter",
      "provider_user_id":twitter_id
   };
-  self.jobber.put(job_spec, function(){
+//DS - used to put NOS jobs, flipping it to put only GT jobs w/ nos commented out
+  /*self.jobber.put(job_spec, function(){
     self.jobsBuilt+=1;
-  });
-  /*self.jobber_gt.put(job_spec, function(r){
-    self.jobsBuiltGt+=1;
   });*/
+  self.jobber_gt.put(job_spec, function(r){
+    self.jobsBuiltGt+=1;
+  });
 };
 
 /*

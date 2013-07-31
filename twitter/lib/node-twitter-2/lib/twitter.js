@@ -38,9 +38,9 @@ function Twitter(options) {
 		authenticate_url: 'https://api.twitter.com/oauth/authenticate',
 		authorize_url: 'https://api.twitter.com/oauth/authorize',
 
-		rest_base: 'https://api.twitter.com/1',
+		rest_base: 'https://api.twitter.com/1.1',
 		search_base: 'http://search.twitter.com',
-		stream_base: 'https://stream.twitter.com/1',
+		stream_base: 'https://stream.twitter.com/1.1',
 		user_stream_base: 'https://userstream.twitter.com/2',
 		//site_stream_base: 'http://sitestream.twitter.com/2b',
 		site_stream_base: 'https://sitestream.twitter.com/2b',
