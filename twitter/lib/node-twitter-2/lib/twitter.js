@@ -57,7 +57,7 @@ function Twitter(options) {
 		this.options.access_token_url,
 		this.options.consumer_key,
 		this.options.consumer_secret,
-		'1.0', null, 'HMAC-SHA1', null,
+		'1.1', null, 'HMAC-SHA1', null,
 		this.options.headers);
 }
 Twitter.VERSION = VERSION;
@@ -197,7 +197,7 @@ Twitter.prototype.stream = function(method, params, callback) {
 		// Workaround for node-oauth vs. twitter commas-in-params bug
 		if ( params && params.track && Array.isArray(params.track) ) {
 			params.track = params.track.join(',')
-		} 
+		}
 	} else if (method === 'site') {
 		stream_base = this.options.site_stream_base;
 		// Workaround for node-oauth vs. twitter double-encode-commas bug
