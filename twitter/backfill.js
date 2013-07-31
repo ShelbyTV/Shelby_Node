@@ -87,6 +87,8 @@ function BackfillManager(){
     var twit_cfg = {};
     twit_cfg.access_token_key = job_data.oauth_token;
     twit_cfg.access_token_secret = job_data.oauth_secret;
+    twit_cfg.consumer_key = "5DNrVZpdIwhQthCJJXCfnQ";
+    twit_cfg.consumer_secret = "Tlb35nblFFTZRidpu36Uo3z9mfcvSVv1MuZZ19SHaU";
     var twitter_client = new twitter(twit_cfg);
     return callback(null, twitter_client);
   };
