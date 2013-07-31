@@ -30,8 +30,7 @@ function Twitter(options) {
 		headers: {
 			'Accept': '*/*',
 			'Connection': 'close',
-			'User-Agent': 'node-twitter/' + VERSION,
-			'ssl_verifypeer' : 'true'
+			'User-Agent': 'node-twitter/' + VERSION
 		},
 
 		request_token_url: 'https://api.twitter.com/oauth/request_token',
@@ -58,7 +57,7 @@ function Twitter(options) {
 		this.options.access_token_url,
 		this.options.consumer_key,
 		this.options.consumer_secret,
-		'1.1', null, 'HMAC-SHA1', null,
+		'1.0A', null, 'HMAC-SHA1', null,
 		this.options.headers);
 }
 Twitter.VERSION = VERSION;
