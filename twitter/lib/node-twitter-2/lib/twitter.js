@@ -30,7 +30,8 @@ function Twitter(options) {
 		headers: {
 			'Accept': '*/*',
 			'Connection': 'close',
-			'User-Agent': 'node-twitter/' + VERSION
+			'User-Agent': 'node-twitter/' + VERSION,
+			'ssl_verifypeer' : 'true'
 		},
 
 		request_token_url: 'https://api.twitter.com/oauth/request_token',
