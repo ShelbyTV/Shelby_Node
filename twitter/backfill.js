@@ -1,5 +1,5 @@
 var config = require('../common/config.js'),
-page_start = 17,
+page_start = 4,
 util = require('../common/util.js'),
 twitter = require('./lib/node-twitter-2/lib/twitter.js'),
 JobManager = require('../common/beanstalk/jobs.js'),
