@@ -13,7 +13,6 @@ function BackfillManager(){
   * Throw a proccessed link back on the queue
   */
   this.addLinkToQueue = function(link, tweet, twitter_id){
-    util.log({link_to_queue: link, twitter_id: twitter_id});
     var job_spec = {
        "twitter_status_update":tweet,
        "url":link,
@@ -34,10 +33,10 @@ function BackfillManager(){
   * Get the page_num page for a given user (oauth in the twit_client)
   */
   this.getPage = function(twit_client, page_num, callback){
-    twit_client.get('/statuses/home_timeline.json', {include_entities:true, count:200}, function(page)
+    twit_client.get('/statuses/home_timeline.json', {include_entities:true, count:200, page: page_num}, function(page)
     {
-	util.log({tw_get_page: page});
-        return callback(page);
+      util.log({tw_get_page: page});
+      return callback(page);
     });
   };
 
