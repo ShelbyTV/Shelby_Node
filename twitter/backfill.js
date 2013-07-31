@@ -19,7 +19,7 @@ function BackfillManager(){
        "provider_type":"twitter",
        "provider_user_id":twitter_id
     };
-    console.log(job_spec);
+    //console.log(job_spec);
     //no longer putting jobs on the nos stack
     /*self.jobber.put(job_spec, function(err, res){
       return;
