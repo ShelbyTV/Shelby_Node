@@ -66,7 +66,7 @@ function BackfillManager(){
         util.log({page_num: page_counter});
         page_counter+=1;
 
-        if (page_counter==17) {
+        if (page_counter==4) {
           twit_client = null;
         }
 
