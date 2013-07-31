@@ -57,7 +57,7 @@ function Twitter(options) {
 		this.options.access_token_url,
 		this.options.consumer_key,
 		this.options.consumer_secret,
-		'1.0A', null, 'HMAC-SHA1', null,
+		'1.0', null, 'HMAC-SHA1', null,
 		this.options.headers);
 }
 Twitter.VERSION = VERSION;
