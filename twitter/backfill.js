@@ -59,14 +59,14 @@ function BackfillManager(){
   */
   this.startBackfill = function(twit_client, twitter_user_id, deleteJob){
     var page_counter = 0;
-    //for(var p=page_start; p>0; p-=1){
+    for(var p=page_start; p>0; p-=1){
       util.log({status:'retrieving pages', type:'backfill', twitter_id:twitter_user_id});
 
       self.getPage(twit_client, 0, function(page){
         util.log({page_num: page_counter});
         page_counter+=1;
 
-        if (page_counter==4) {
+        if (page_counter==17) {
           twit_client = null;
         }
 
@@ -75,7 +75,7 @@ function BackfillManager(){
           return self.addLinkToQueue(link, tweet, twitter_user_id);
         });
       });
-    //}
+    }
   };
 
 
