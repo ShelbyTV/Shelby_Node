@@ -6,7 +6,7 @@ JobManager = require('../common/beanstalk/jobs.js'),
 async = require('async');
 
 function BackfillManager(){
-  
+
   var self = this;
 
   /*
@@ -34,39 +34,39 @@ function BackfillManager(){
   * Get the page_num page for a given user (oauth in the twit_client)
   */
   this.getPage = function(twit_client, page_num, callback){
-    twit_client.get('/statuses/home_timeline.json', {include_entities:true, count:200, page:page_num}, function(page) 
-    {   
+    twit_client.get('/statuses/home_timeline.json', {include_entities:true, count:200}, function(page)
+    {
 	util.log({tw_get_page: page});
         return callback(page);
-    });  
+    });
   };
 
   /*
   * Get all links on a given page
   */
-  this.getPageLinks = function(page, linkExtractedCallback){ 
-    for (var i in page){ 
-      if (page[i] && page[i].entities && page[i].entities.urls && page[i].entities.urls.length){ 
+  this.getPageLinks = function(page, linkExtractedCallback){
+    for (var i in page){
+      if (page[i] && page[i].entities && page[i].entities.urls && page[i].entities.urls.length){
           var url = page[i].entities.urls[0].expanded_url ? page[i].entities.urls[0].expanded_url : page[i].entities.urls[0].url;
           linkExtractedCallback(url, page[i]);
       }
     }
   };
-  
-  
+
+
   /*
   * Begin the backfill proccess. Named start due to asyncness
   */
-  this.startBackfill = function(twit_client, twitter_user_id, deleteJob){  
+  this.startBackfill = function(twit_client, twitter_user_id, deleteJob){
     var page_counter = 0;
-    for(var p=page_start; p>0; p-=1){ 
+    //for(var p=page_start; p>0; p-=1){
       util.log({status:'retrieving pages', type:'backfill', twitter_id:twitter_user_id});
-      
-      self.getPage(twit_client, p, function(page){ 
+
+      self.getPage(twit_client, 0, function(page){
         util.log({page_num: page_counter});
         page_counter+=1;
-        
-        if (page_counter==17) { 
+
+        if (page_counter==4) {
           twit_client = null;
         }
 
@@ -75,9 +75,9 @@ function BackfillManager(){
           return self.addLinkToQueue(link, tweet, twitter_user_id);
         });
       });
-    }  
+    //}
   };
-  
+
 
   /*
   * Create a new twitter client and pass it to startbackfill pre-func
@@ -98,15 +98,15 @@ function BackfillManager(){
     util.log({"status":'commencing new job', "type":'backfill', "twitter_id":job_data.twitter_id});
     self.getTwitterClient(job_data, deleteJob, function(err, twit_cl){
       self.startBackfill(twit_cl, job_data.twitter_id, deleteJob);
-    });    
+    });
   };
 
   /*
   * Switch for the job action and execute the corresponding function
   */
-  this.proccessNewJob = function(job, deleteJob){ 
-  deleteJob();  
-  switch(job.action){ 
+  this.proccessNewJob = function(job, deleteJob){
+  deleteJob();
+  switch(job.action){
       case 'add_user':
       self.addUser(job, deleteJob);
       break;
@@ -116,19 +116,19 @@ function BackfillManager(){
       break;
     }
   };
-  
+
   this.init = function(){
-    self.jobber = JobManager.create(config.twitter_backfill_tube, config.link_tube_high, self.proccessNewJob); 
+    self.jobber = JobManager.create(config.twitter_backfill_tube, config.link_tube_high, self.proccessNewJob);
     self.jobber_gt = JobManager.create('default', 'link_processing_gt', function(){/*donothing*/});
      self.jobber.poolect(20, function(err, res){
        self.jobber_gt.poolect(20, function(err, res){
-         setInterval(function(){console.log('POOL SIZE:', self.jobber.respool.pool.length)}, 5000); 
+         setInterval(function(){console.log('POOL SIZE:', self.jobber.respool.pool.length)}, 5000);
          self.jobber.reserve(function(err, res){
            return;
          });
-       });  
+       });
      });
-  };  
+  };
 }
 
 var b = new BackfillManager();
