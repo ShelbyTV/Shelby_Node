@@ -35,7 +35,6 @@ function BackfillManager(){
   this.getPage = function(twit_client, page_num, callback){
     twit_client.get('/statuses/home_timeline.json', {include_entities:true, count:200, page: page_num}, function(page)
     {
-      util.log({tw_get_page: page});
       return callback(page);
     });
   };

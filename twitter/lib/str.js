@@ -26,7 +26,7 @@ TwitterStream.prototype.initialize = function(){
 };
 
 /*
- * Attach to beanstalk 
+ * Attach to beanstalk
  */
 TwitterStream.prototype.initJobQueue = function(cb){
   var self = this;
@@ -55,7 +55,7 @@ TwitterStream.prototype.addNewUser = function(job, deleteJob){
   console.log('NEW USR:', job);
   /*redis.sismember(config.redis_config.stream_key, job.twitter_id, function(err, res){
     if (res/1){
-      util.log({"status":'user already in stream', "twitter_id":job.twitter_id}); 
+      util.log({"status":'user already in stream', "twitter_id":job.twitter_id});
       return deleteJob();
     } else {*/
       util.log({"status":"Adding stream from beanstalk", "type":"stream"});
@@ -77,7 +77,7 @@ TwitterStream.prototype.parseTweet = function(tweet){
     if (tweet.message.entities.urls.hasOwnProperty(i)){
       self.trigger('tweet:parsed', tweet.message, tweet.message.entities.urls[i], tweet.for_user);
     }
-  } 
+  }
 };
 
 /*
@@ -86,8 +86,8 @@ TwitterStream.prototype.parseTweet = function(tweet){
  */
 TwitterStream.prototype.defineStream = function(following){
   var self = this;
-  var twit = new twitter_client(config.twitter_keys);   
-  twit.stream('site', {"follow":following, "with":'followings'}, function(stream){   
+  var twit = new twitter_client(config.twitter_keys);
+  twit.stream('site', {"follow":following, "with":'followings'}, function(stream){
     var stream_object = {
       "stream":stream,
       "following":following
@@ -99,15 +99,15 @@ TwitterStream.prototype.defineStream = function(following){
       return self.parseTweet(data);
     });
 
-    stream.on('end', function(data) { 
-      self.trigger('disconnect'); 
+    stream.on('end', function(data) {
+      self.trigger('disconnect');
       console.log('--DISCONNECT--');
     });
 
     stream.on('error', function(data){
       console.log('ERROR:', data);
     });
-  }); 
+  });
 };
 
 /*
@@ -141,12 +141,12 @@ TwitterStream.prototype.buildJob = function(tweet, url, twitter_id){
 TwitterStream.prototype.chunkizeFollowers = function(ids){
   var self = this;
   if (ids.length===0) return;
- 
+
  var id_arrays = [];
   while (ids.length>config.twitter_stream_limit){
     id_arrays.push(ids.splice(0,config.twitter_stream_limit));
   }
- id_arrays.push(ids); //the remainder 
+ id_arrays.push(ids); //the remainder
  var rateMaker = function(){
    setInterval(function(){
      var stream_ids = id_arrays.shift();
@@ -154,7 +154,7 @@ TwitterStream.prototype.chunkizeFollowers = function(ids){
      self.trigger('stream:followers', stream_ids);
    },100);
  };
-  rateMaker(); 
+  rateMaker();
 };
 
 /*
