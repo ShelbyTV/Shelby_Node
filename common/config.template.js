@@ -53,6 +53,13 @@ exports.redis_config =
   stream_key: 'stream_users'
 }
 
+/* RESQUE */
+exports.resque_config =
+{
+  host: '10.178.5.243',
+  port: '6379'
+}
+
 /* BITLY */
 
 exports.bitly_usr = 'onshelby';

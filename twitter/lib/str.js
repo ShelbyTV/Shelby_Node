@@ -3,16 +3,22 @@ var util = require('../../common/util.js');
 var twitter_client = require('./node-twitter-2/lib/twitter.js');
 var u = require('util');
 var redis = require('redis').createClient(config.redis_config.port, config.redis_config.server);
+var resque = require('coffee-resque').connect({
+  host: config.resque_config.host,
+  port: config.resque_config.port
+});
 
 var TwitterStream = function(sort_order){
   this.jobsBuilt = 0;
   this.jobsBuiltGt = 0;
+  this.jobsBuiltUnfollow = 0;
   this.sortOrder = sort_order;
   this.full_streams = [];
   this.partial_streams = [];
   this.bind('redis:all_users', this.chunkizeFollowers);
   this.bind('stream:followers', this.defineStream);
   this.bind('tweet:parsed', this.buildJob);
+  this.bind('unfollow:parsed', this.buildUnfollowResqueJob);
 };
 
 /*
@@ -72,6 +78,9 @@ TwitterStream.prototype.addNewUser = function(job, deleteJob){
  */
 TwitterStream.prototype.parseTweet = function(tweet){
   var self = this;
+  if (tweet.message && tweet.message.event && (tweet.message.event == 'unfollow')) {
+    self.trigger('unfollow:parsed', tweet.message.source.id_str, tweet.message.target.id_str);  
+  }
   if (!(tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length)) {return;}
   for (var i in tweet.message.entities.urls){
     if (tweet.message.entities.urls.hasOwnProperty(i)){
@@ -134,6 +143,16 @@ TwitterStream.prototype.buildJob = function(tweet, url, twitter_id){
   });
 };
 
+/*
+ * Places an unfollow job in resque
+ * @param unfollowerUid : string : the twitter id of the user who did the unfollowing
+ * @param unfolloweeUid : string : the twitter id of the user who was unfollowed
+ */
+TwitterStream.prototype.buildUnfollowResqueJob = function(unfollowerUid, unfolloweeUid){
+  resque.enqueue('twitter_unfollow', 'TwitterUnfollowChecker', [unfollowerUid, unfolloweeUid]);
+  this.jobsBuiltUnfollow+=1;
+}
+   
 /*
  * Chunkize ids into config.twitter_stream_limit sized arrays
  * @param ids : array : Array of ids to chunkize
