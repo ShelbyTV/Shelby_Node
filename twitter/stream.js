@@ -3,7 +3,7 @@ var Stream = str_lib.create('DESC');
 Stream.initialize();
 var startTime = new Date().getTime();
 Stream.bind('disonnect', process.exit);
-setInterval(process.exit, 300000);
+setTimeout(process.exit, 120000);
 setInterval(function(){
   console.log(Stream.jobsBuilt, 'jobs built');
   console.log(Stream.jobsBuiltGt, 'jobs built GT');
