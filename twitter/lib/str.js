@@ -78,13 +78,13 @@ TwitterStream.prototype.addNewUser = function(job, deleteJob){
  */
 TwitterStream.prototype.parseTweet = function(tweet){
   var self = this;
-  if (tweet.message && tweet.message.event && (tweet.message.event == 'unfollow')) {
+  if (tweet.message && tweet.message.event && (tweet.message.event == 'unfollow')){
     self.trigger('unfollow:parsed', tweet.message.source.id_str, tweet.message.target.id_str);  
-  }
-  if (!(tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length)) {return;}
-  for (var i in tweet.message.entities.urls){
-    if (tweet.message.entities.urls.hasOwnProperty(i)){
-      self.trigger('tweet:parsed', tweet.message, tweet.message.entities.urls[i], tweet.for_user);
+  }else if (tweet.message && tweet.message.entities && tweet.message.entities.urls && tweet.message.entities.urls.length){
+    for (var i in tweet.message.entities.urls){
+      if (tweet.message.entities.urls.hasOwnProperty(i)){
+        self.trigger('tweet:parsed', tweet.message, tweet.message.entities.urls[i], tweet.for_user);
+      }
     }
   }
 };
